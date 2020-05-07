@@ -10,7 +10,6 @@ repos:
   hooks:
     - id: go-fmt
     - id: go-vet
-    - id: go-lint
 - repo: https://github.com/jumanjihouse/pre-commit-hooks
   rev: 2.0.0
   hooks:
