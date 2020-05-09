@@ -24,11 +24,8 @@ func AuthMiddleware(c *gin.Context) {
 
 func main() {
 	fmt.Println("Hello from gitwize BE")
-	r := controller.GetDefaultController()
-
+	r := controller.Initialize()
 	// only authorized users can access
 	r.Use(AuthMiddleware)
-
-	r.GET(controller.PingEndPoint, controller.GetPing)
 	r.Run()
 }
