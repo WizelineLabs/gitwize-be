@@ -4,16 +4,17 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"os"
+	"gitwize-be/src/configuration"
 )
 
 func DBConn() (db *sql.DB) {
-	user := os.Getenv("GW_DB_USER")
-	pass := os.Getenv("GW_DB_PASS")
-	host := os.Getenv("GW_DB_HOST")
-	port := os.Getenv("GW_DB_PORT")
-	dbname := os.Getenv("GW_DB_NAME")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user, pass, host, port, dbname)
+	config := configuration.ReadConfiguration()
+	user := config.Database.GwDbUser
+	pass := config.Database.GwDbPassword
+	host := config.Database.GwDbHost
+	port := config.Database.GwDbPort
+	dbname := config.Database.GwDbName
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Local", user, pass, host, port, dbname)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		panic(err.Error())

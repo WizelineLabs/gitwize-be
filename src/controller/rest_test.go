@@ -52,10 +52,10 @@ func TestPostReposOK(t *testing.T) {
 func TestPostReposNotOK(t *testing.T) {
 	router := Initialize()
 	posRequest := RepoInfoPost{
-		Name:     "Gitwize",
-		Url:      "https://github.com/gitwize",
-		Status:   "ONGOING",
-		User:     "tester",
+		Name:   "Gitwize",
+		Url:    "https://github.com/gitwize",
+		Status: "ONGOING",
+		User:   "tester",
 	}
 
 	b, err := json.Marshal(posRequest)
