@@ -1,10 +1,10 @@
 package auth
 
 import (
+	verifier "github.com/okta/okta-jwt-verifier-golang"
 	"net/http"
 	"os"
 	"strings"
-	verifier "github.com/okta/okta-jwt-verifier-golang"
 )
 
 // JWTVerifier verifies if a token is valid
@@ -13,7 +13,7 @@ type JWTVerifier interface {
 }
 
 // OktaJWTVerifier verifies Okta tokens
-type OktaJWTVerifier struct {}
+type OktaJWTVerifier struct{}
 
 // Verify verifies access token using Okta API
 func (o OktaJWTVerifier) Verify(token string) bool {

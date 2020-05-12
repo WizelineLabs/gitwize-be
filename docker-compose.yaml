@@ -1,0 +1,12 @@
+version: "3"
+services:
+  db:
+    image: mysql:latest
+    restart: "no"
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_DATABASE=gitwizebe
+      - MYSQL_USER=gitwizebe_user
+      - MYSQL_PASSWORD=P@ssword123
+    ports:
+      - "3306:3306"
