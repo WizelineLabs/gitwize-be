@@ -28,17 +28,12 @@ func performRequest(r http.Handler, method, path string, body io.Reader, headers
 func TestPostReposOK(t *testing.T) {
 	router := Initialize()
 	posRequest := RepoInfoPost{
-		Name:     "Gitwize",
-		Url:      "https://github.com/gitwize",
-		Status:   "ONGOING",
-		User:     "tester",
-		Password: "123456",
+		Name:   "Gitwize",
+		Url:    "https://github.com/gitwize",
+		Status: "ONGOING",
+		User:   "tester",
 	}
-	expectedResult := "{\"name\":\"Gitwize\"," +
-		"\"url\":\"https://github.com/gitwize\"," +
-		"\"status\":\"ONGOING\"," +
-		"\"username\":\"tester\"," +
-		"\"password\":\"123456\"}"
+	expectedResult := "{\"id\": 1}"
 
 	b, err := json.Marshal(posRequest)
 	if err != nil {
@@ -49,7 +44,7 @@ func TestPostReposOK(t *testing.T) {
 	assert.Equal(t, expectedResult, w.Body.String())
 }
 
-func TestPostReposNotOK(t *testing.T) {
+func TestPostRepos_BadRequest(t *testing.T) {
 	router := Initialize()
 	posRequest := RepoInfoPost{
 		Name:   "Gitwize",

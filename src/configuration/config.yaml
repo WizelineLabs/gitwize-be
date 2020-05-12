@@ -3,7 +3,7 @@ server:
 
 database:
   gwDbName: "gitwizebe"
-  gwDbUsername: "gitwizebe_user"
+  gwDbUser: "gitwizebe_user"
   gwDbPassword: "P@ssword123"
-  gwDbHost: "0.0.0.0"
+  gwDbHost: "localhost"
   gwDbPort: 3306

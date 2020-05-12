@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"testing"
 	"net/http"
+	"testing"
 )
 
 type mockJWTVerifier struct{}
@@ -15,9 +15,9 @@ func (m mockJWTVerifier) Verify(token string) bool {
 }
 
 func Test_Request_Authorized(t *testing.T) {
-	r := &http.Request {
+	r := &http.Request{
 		Header: map[string][]string{
-					"Authorization": {"Bearer valid-token"},
+			"Authorization": {"Bearer valid-token"},
 		},
 	}
 	v := mockJWTVerifier{}
@@ -28,9 +28,9 @@ func Test_Request_Authorized(t *testing.T) {
 }
 
 func Test_Request_UnAuthorized(t *testing.T) {
-	r := &http.Request {
+	r := &http.Request{
 		Header: map[string][]string{
-					"Authorization": {"Bearer XXXXXX"},
+			"Authorization": {"Bearer XXXXXX"},
 		},
 	}
 	v := mockJWTVerifier{}

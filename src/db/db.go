@@ -1,23 +1,34 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"gitwize-be/src/configuration"
 )
 
-func DBConn() (db *sql.DB) {
+func dbConn() (db *gorm.DB) {
 	config := configuration.ReadConfiguration()
 	user := config.Database.GwDbUser
 	pass := config.Database.GwDbPassword
 	host := config.Database.GwDbHost
 	port := config.Database.GwDbPort
 	dbname := config.Database.GwDbName
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Local", user, pass, host, port, dbname)
-	db, err := sql.Open("mysql", dsn)
+
+	dsn := fmt.Sprintf("%s:%s@(%s:%d)/%s?parseTime=true&loc=Local", user, pass, host, port, dbname)
+	db, err := gorm.Open("mysql", dsn)
 	if err != nil {
-		panic(err.Error())
+		panic("Failed to connect database: " + err.Error())
 	}
-	return db
+	return
+}
+
+func Initilize() *gorm.DB {
+	gormDB := dbConn()
+
+	// Migrate the schema
+	gormDB.AutoMigrate(&Repository{}, &Metric{})
+
+	return gormDB
 }
