@@ -5,6 +5,7 @@ import (
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/storage/memory"
+	"log"
 	"strings"
 )
 
@@ -15,7 +16,7 @@ type remoteClient interface {
 func GetRemoteBranches(client remoteClient) []string {
 	refList, err := client.List(&git.ListOptions{})
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	refPrefix := "refs/heads/"
 	result := []string{}
