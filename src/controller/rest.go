@@ -105,7 +105,7 @@ func getStats(c *gin.Context) {
 }
 
 func Initialize() *gin.Engine {
-	dbConnect = db.Initilize()
+	dbConnect = db.Initialize()
 
 	ginCont := gin.Default()
 	ginCont.GET(gwEndPointGetPutDel, getRepos)
