@@ -1,11 +1,14 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
+	"gitwize-be/src/configuration"
+	"os"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"gitwize-be/src/configuration"
 )
 
 func dbConn() (db *gorm.DB) {
@@ -31,4 +34,14 @@ func Initilize() *gorm.DB {
 	gormDB.AutoMigrate(&Repository{}, &Metric{})
 
 	return gormDB
+}
+
+func SqlDBConn() (db *sql.DB) {
+	dbConn := os.Getenv("DB_CONN_STRING")
+
+	db, err := sql.Open("mysql", dbConn)
+	if err != nil {
+		panic("Failed to connect database: " + err.Error())
+	}
+	return
 }
