@@ -1,3 +1,7 @@
+DROP DATABASE IF EXISTS gitwize;
+CREATE DATABASE gitwize;
+USE gitwize;
+
 CREATE TABLE repository (
 	id INT NOT NULL AUTO_INCREMENT,
 	name varchar(256) NOT NULL,
