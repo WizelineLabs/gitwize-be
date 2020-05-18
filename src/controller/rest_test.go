@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"testing"
 )
 
@@ -33,7 +34,7 @@ func TestPostReposOK(t *testing.T) {
 		Status: "ONGOING",
 		User:   "tester",
 	}
-	expectedResult := "{\"id\": 1}"
+	expectedResult := "{\"id\":\\d+}"
 
 	b, err := json.Marshal(posRequest)
 	if err != nil {
@@ -41,16 +42,15 @@ func TestPostReposOK(t *testing.T) {
 	}
 	w := performRequest(router, http.MethodPost, gwEndPointPost, bytes.NewReader(b))
 	assert.Equal(t, http.StatusCreated, w.Code)
-	assert.Equal(t, expectedResult, w.Body.String())
+	assert.Regexp(t, regexp.MustCompile(expectedResult), w.Body.String())
 }
 
 func TestPostRepos_BadRequest(t *testing.T) {
 	router := Initialize()
 	posRequest := RepoInfoPost{
-		Name:   "Gitwize",
-		Url:    "https://github.com/gitwize",
-		Status: "ONGOING",
-		User:   "tester",
+		Name: "Gitwize",
+		Url:  "https://github.com/gitwize",
+		User: "tester",
 	}
 
 	b, err := json.Marshal(posRequest)
