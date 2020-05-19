@@ -3,10 +3,12 @@ services:
   db:
     image: mysql:latest
     restart: "no"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=true
-      - MYSQL_DATABASE=gitwizebe
-      - MYSQL_USER=gitwizebe_user
+      - MYSQL_USER=gitwize_user
+      - MYSQL_DATABASE=gitwize
       - MYSQL_PASSWORD=P@ssword123
     ports:
       - "3306:3306"

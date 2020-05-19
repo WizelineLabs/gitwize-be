@@ -13,7 +13,7 @@ type Configurations struct {
 
 // ServerConfigurations exported
 type ServerConfigurations struct {
-	Port int
+	Port string
 }
 
 // DatabaseConfigurations exported
@@ -26,18 +26,27 @@ type DatabaseConfigurations struct {
 }
 
 func ReadConfiguration() Configurations {
-	// Set the file name of the configurations file
-	viper.SetConfigName("config")
-
-	// Set the path to look for the configurations file
-	viper.AddConfigPath("src/configuration")
-
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()
 
-	viper.SetConfigType("yaml")
+	deployEnv := viper.GetString(gwDeployEnv)
 	var configuration Configurations
+	var gwDbPasswordEnv string
+	// Set the file name of the configurations file
+	switch deployEnv {
+	case devEnvironment:
+		viper.SetConfigName(configDev)
+		gwDbPasswordEnv = gwDbPasswordDev
+	default:
+		viper.SetConfigName(configLocal)
+		gwDbPasswordEnv = gwDbPasswordLocal
+	}
 
+	// Set the path to look for the configurations file
+	viper.AddConfigPath(configPathFromRootDir)
+	viper.AddConfigPath(configPathFromSubModules)
+
+	viper.SetConfigType(configTypeYaml)
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Printf("Error reading config file, %s", err)
 	}
@@ -46,6 +55,7 @@ func ReadConfiguration() Configurations {
 	if err != nil {
 		fmt.Printf("Unable to decode into struct, %v", err)
 	}
+	configuration.Database.GwDbPassword = viper.GetString(gwDbPasswordEnv)
 
 	return configuration
 }

@@ -9,4 +9,15 @@
   Install git hook `pre-commit install`
 
 ### Run All Test Cases
-`go test ./...`
+# On local environment
+`cd docker; docker-compose up`
+`GW_DATABASE_SECRET_LOCAL=P@ssword123 go test ./...`
+# On cloud environment
+`GW_DEPLOY_ENV=DEV GW_DATABASE_SECRET_DEV=database_secret go test ./...`
+
+### Run application
+# On local environment
+`cd docker; docker-compose up`
+`GW_DATABASE_SECRET_LOCAL=P@ssword123 go run application.go`
+# On cloud environment
+`GW_DEPLOY_ENV=DEV GW_DATABASE_SECRET_DEV=database_secret go run application.go`

@@ -1,9 +1,0 @@
-server:
-  port: 8080
-
-database:
-  gwDbName: "gitwizebe"
-  gwDbUser: "gitwizebe_user"
-  gwDbPassword: "P@ssword123"
-  gwDbHost: "localhost"
-  gwDbPort: 3306

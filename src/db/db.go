@@ -27,7 +27,7 @@ func dbConn() (db *gorm.DB) {
 	return
 }
 
-func Initilize() *gorm.DB {
+func Initialize() *gorm.DB {
 	gormDB := dbConn()
 
 	// Migrate the schema
