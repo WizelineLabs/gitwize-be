@@ -11,7 +11,7 @@ import (
 )
 
 type PullRequestService interface {
-	List(ctx context.Context, owner string, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error)
+	List(owner string, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error)
 }
 
 type GithubPullRequestService struct {
@@ -35,13 +35,12 @@ func newGithubClient() *github.Client {
 	return client
 }
 
-func (s *GithubPullRequestService) List(ctx context.Context, owner string, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error) {
-	return s.githubClient.PullRequests.List(ctx, owner, repo, opts)
+func (s *GithubPullRequestService) List(owner string, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error) {
+	return s.githubClient.PullRequests.List(context.Background(), owner, repo, opts)
 }
 
 func CollectPRs(prSvc PullRequestService, owner string, repo string) {
-	ctx := context.Background()
-	prs, _, err := prSvc.List(ctx, owner, repo, &github.PullRequestListOptions{
+	prs, _, err := prSvc.List(owner, repo, &github.PullRequestListOptions{
 		State: "all",
 	})
 
@@ -59,12 +58,12 @@ func CollectPRs(prSvc PullRequestService, owner string, repo string) {
 		panic(err)
 	}
 
-	updatePRs(repoID, prs, conn)
+	updatePRs(prSvc, repoID, prs, conn)
 }
 
-func updatePRs(repoID int, prs []*github.PullRequest, conn *sql.DB) {
+func updatePRs(prSvc PullRequestService, repoID int, prs []*github.PullRequest, conn *sql.DB) {
 	// Prepare statements
-	insertStmt, err := conn.Prepare("INSERT INTO pull_request (repository_id, pr_no, title, body, head, base, state, created_by, created_at, merged_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	insertStmt, err := conn.Prepare("INSERT INTO pull_request (repository_id, url, pr_no, title, body, head, base, state, created_by, created_year, created_month, created_day, created_hour, closed_year, closed_month, closed_day, closed_hour) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	deleteStmt, err := conn.Prepare("DELETE FROM pull_request WHERE repository_id = ?")
 	if err != nil {
 		panic(err.Error())
@@ -80,6 +79,14 @@ func updatePRs(repoID int, prs []*github.PullRequest, conn *sql.DB) {
 
 	// insert again
 	for _, pr := range prs {
-		insertStmt.Exec(repoID, pr.Number, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, pr.State, pr.User.Login, pr.CreatedAt, pr.MergedAt)
+		state := "open"
+		if *pr.State == "closed" && pr.MergedAt != nil {
+			state = "merged"
+		} else if pr.State == nil {
+			state = "rejected"
+		}
+
+		created := pr.CreatedAt.UTC()
+		insertStmt.Exec(repoID, pr.HTMLURL, pr.Number, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, state, pr.User.Login, created.Year(), created.Month(), created.Day(), created.Hour(), nil, nil, nil, nil)
 	}
 }
