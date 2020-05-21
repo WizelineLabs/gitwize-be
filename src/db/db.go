@@ -8,6 +8,8 @@ import (
 	"gitwize-be/src/configuration"
 )
 
+var gormDB *gorm.DB
+
 func dbConn() (db *gorm.DB) {
 	config := configuration.ReadConfiguration()
 	user := config.Database.GwDbUser
@@ -25,7 +27,7 @@ func dbConn() (db *gorm.DB) {
 }
 
 func Initialize() *gorm.DB {
-	gormDB := dbConn()
+	gormDB = dbConn()
 
 	// Migrate the schema
 	gormDB.AutoMigrate(&Repository{}, &Metric{})

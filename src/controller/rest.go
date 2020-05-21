@@ -1,22 +1,18 @@
 package controller
 
 import (
+	"github.com/gin-gonic/gin"
 	"gitwize-be/src/auth"
 	"gitwize-be/src/db"
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
-
-var dbConnect *gorm.DB
 
 func getRepos(c *gin.Context) {
 	id := c.Param("id")
 	var repo db.Repository
-	if err := dbConnect.First(&repo, id).Error; err != nil {
+	if err := db.FindRepository(&repo, id); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -43,7 +39,7 @@ func postRepos(c *gin.Context) {
 		CtlModifiedBy:   reqInfo.User,
 		CtlModifiedDate: time.Now(),
 	}
-	if err := dbConnect.Create(&createdRepos).Error; err != nil {
+	if err := db.CreateRepository(&createdRepos); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	c.JSON(http.StatusCreated, gin.H{
@@ -60,7 +56,7 @@ func putRepos(c *gin.Context) {
 
 	id := c.Param("id")
 	var repo db.Repository
-	if err := dbConnect.First(&repo, id).Error; err != nil {
+	if err := db.FindRepository(&repo, id); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -73,7 +69,7 @@ func putRepos(c *gin.Context) {
 		repo.Status = reqInfo.Status
 		repo.CtlModifiedBy = reqInfo.User
 		repo.CtlModifiedDate = time.Now()
-		if err := dbConnect.Save(&repo).Error; err != nil {
+		if err := db.UpdateRepository(&repo); err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
 		}
 		c.JSON(http.StatusOK, repo)
@@ -83,14 +79,14 @@ func putRepos(c *gin.Context) {
 func delRepos(c *gin.Context) {
 	id := c.Param("id")
 	var repo db.Repository
-	if err := dbConnect.First(&repo, id).Error; err != nil {
+	if err := db.FindRepository(&repo, id); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	if repo.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + id + " doesn't exist"})
 	} else {
-		if err := dbConnect.Delete(&repo).Error; err != nil {
+		if err := db.DeleteRepository(&repo); err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
 		}
 		c.JSON(http.StatusNoContent, nil)
@@ -121,7 +117,7 @@ func AuthMiddleware(c *gin.Context) {
 }
 
 func Initialize() *gin.Engine {
-	dbConnect = db.Initialize()
+	db.Initialize()
 
 	ginCont := gin.Default()
 	ginCont.Use(AuthMiddleware)
