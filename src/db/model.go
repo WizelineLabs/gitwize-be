@@ -12,20 +12,30 @@ const (
 	LINES_ADDED
 	LINES_REMOVED
 	COMMITS
-	PRS_OPEN
+	PRS_CREATED
 	PRS_MERGED
 	PRS_REJECTED
 )
 
-var MapTypeMetric = map[string]MetricsType{
+var MapNameToTypeMetric = map[string]MetricsType{
 	"ALL":           ALL,
 	"loc":           LOC,
 	"lines_added":   LINES_ADDED,
 	"lines_removed": LINES_REMOVED,
 	"commits":       COMMITS,
-	"prs_open":      PRS_OPEN,
+	"prs_create":    PRS_CREATED,
 	"prs_merged":    PRS_MERGED,
 	"prs_rejected":  PRS_REJECTED,
+}
+
+var MapTypeMetricToName = map[MetricsType]string{
+	LOC:           "loc",
+	LINES_ADDED:   "lines_added",
+	LINES_REMOVED: "lines_removed",
+	COMMITS:       "commits",
+	PRS_CREATED:   "prs_create",
+	PRS_MERGED:    "prs_merged",
+	PRS_REJECTED:  "prs_rejected",
 }
 
 const (
@@ -44,19 +54,26 @@ type Repository struct {
 	CtlCreatedBy    string    `gorm:"column:ctl_created_by" json:"ctl_created_by"`
 	CtlModifiedDate time.Time `gorm:"column:ctl_modified_date" json:"ctl_modified_date"`
 	CtlModifiedBy   string    `gorm:"column:ctl_modified_by" json:"ctl_modified_by"`
-	Metrics         []Metric
 }
 
 func (Repository) TableName() string {
 	return tableRepository
 }
 
+type RepositoryDTO struct {
+	ID      uint                `json:"id"`
+	Name    string              `json:"name"`
+	Url     string              `json:"url"`
+	Status  string              `json:"status"`
+	Metrics map[string][]Metric `json:"metric"`
+}
+
 type Metric struct {
 	ID           uint        `gorm:"column:id;primary_key" json:"id"`
-	RepositoryID uint        `gorm:"column:repository_id" json:"repository_id"`
+	RepositoryID int         `gorm:"column:repository_id" json:"repository_id"`
 	BranchName   string      `gorm:"column:branch;index:branch" json:"branch"`
 	Type         MetricsType `gorm:"column:type" json:"type"`
-	Value        uint        `gorm:"column:value" json:"value"`
+	Value        uint64      `gorm:"column:value" json:"value"`
 	AsOfDate     time.Time   `gorm:"column:as_of_date" json:"as_of_date"`
 }
 

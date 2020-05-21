@@ -94,13 +94,34 @@ func delRepos(c *gin.Context) {
 }
 
 func getStats(c *gin.Context) {
-	id := c.Param("id")
-	metricType := c.DefaultQuery("metric_type", "ALL")
-	c.JSON(http.StatusOK, gin.H{
-		"message":    "Statistic information is read successfully",
-		"id":         id,
-		"metricType": metricType,
-	})
+	idRepository := c.Param("id")
+	metricTypeName := c.DefaultQuery("metric_type", "ALL")
+	metricTypeVal, ok := db.MapNameToTypeMetric[metricTypeName]
+	if !ok {
+		metricTypeVal = db.ALL
+	}
+
+	var repo db.Repository
+	if err := db.FindRepository(&repo, idRepository); err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	if repo.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + idRepository + " doesn't exist"})
+	} else {
+		result, err := db.GetMetricBaseOnType(idRepository, metricTypeVal)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, err.Error())
+		} else {
+			repositoryDTO := db.RepositoryDTO{
+				ID:      repo.ID,
+				Name:    repo.Name,
+				Status:  repo.Status,
+				Url:     repo.Url,
+				Metrics: result,
+			}
+			c.JSON(http.StatusOK, repositoryDTO)
+		}
+	}
 }
 
 // AuthMiddleware checks for valid access token
