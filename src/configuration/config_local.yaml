@@ -1,0 +1,11 @@
+server:
+  port: 8080
+
+database:
+  gwDbName: gitwize
+  gwDbUser: gitwize_user
+  gwDbHost: localhost
+  gwDbPort: 3306
+
+auth:
+  authDisable: 'true'

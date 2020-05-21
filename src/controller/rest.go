@@ -3,9 +3,9 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"gitwize-be/src/auth"
+	"gitwize-be/src/configuration"
 	"gitwize-be/src/db"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -105,7 +105,7 @@ func getStats(c *gin.Context) {
 
 // AuthMiddleware checks for valid access token
 func AuthMiddleware(c *gin.Context) {
-	authDisabled := os.Getenv("AUTH_DISABLED") == "true"
+	authDisabled := configuration.CurConfiguration.Auth.AuthDisable == "true"
 	if !authDisabled && !auth.IsAuthorized(nil, c.Request) {
 		c.AbortWithStatusJSON(401, gin.H{
 			"message.key": "system.unauthorized",
