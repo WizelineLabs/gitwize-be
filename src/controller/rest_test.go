@@ -3,12 +3,14 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"regexp"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type header struct {
@@ -27,6 +29,7 @@ func performRequest(r http.Handler, method, path string, body io.Reader, headers
 }
 
 func TestPostReposOK(t *testing.T) {
+	os.Setenv("AUTH_DISABLED", "true")
 	router := Initialize()
 	posRequest := RepoInfoPost{
 		Name:   "Gitwize",
@@ -46,6 +49,7 @@ func TestPostReposOK(t *testing.T) {
 }
 
 func TestPostRepos_BadRequest(t *testing.T) {
+	os.Setenv("AUTH_DISABLED", "true")
 	router := Initialize()
 	posRequest := RepoInfoPost{
 		Name: "Gitwize",
@@ -59,4 +63,12 @@ func TestPostRepos_BadRequest(t *testing.T) {
 	}
 	w := performRequest(router, http.MethodPost, gwEndPointPost, bytes.NewReader(b))
 	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetRepo_Unauthorized(t *testing.T) {
+	os.Setenv("AUTH_DISABLED", "false")
+	router := Initialize()
+
+	w := performRequest(router, http.MethodGet, "/api/v1/repositories/1", nil)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }

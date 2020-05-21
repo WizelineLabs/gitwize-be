@@ -1,11 +1,14 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"gitwize-be/src/auth"
 	"gitwize-be/src/db"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
 var dbConnect *gorm.DB
@@ -104,10 +107,24 @@ func getStats(c *gin.Context) {
 	})
 }
 
+// AuthMiddleware checks for valid access token
+func AuthMiddleware(c *gin.Context) {
+	authDisabled := os.Getenv("AUTH_DISABLED") == "true"
+	if !authDisabled && !auth.IsAuthorized(nil, c.Request) {
+		c.AbortWithStatusJSON(401, gin.H{
+			"message.key": "system.unauthorized",
+			"message":     "Unauthorized!",
+		})
+	}
+
+	c.Next()
+}
+
 func Initialize() *gin.Engine {
 	dbConnect = db.Initialize()
 
 	ginCont := gin.Default()
+	ginCont.Use(AuthMiddleware)
 	ginCont.GET(gwEndPointGetPutDel, getRepos)
 	ginCont.POST(gwEndPointPost, postRepos)
 	ginCont.PUT(gwEndPointGetPutDel, putRepos)
