@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitwize-be/src/auth"
 	"gitwize-be/src/configuration"
+	"gitwize-be/src/cypher"
 	"gitwize-be/src/db"
 	"net/http"
 	"time"
@@ -34,6 +35,7 @@ func postRepos(c *gin.Context) {
 		Url:             reqInfo.Url,
 		Status:          reqInfo.Status,
 		UserName:        reqInfo.User,
+		Password:        cypher.EncryptString(reqInfo.Password, configuration.CurConfiguration.Cypher.PassPhase),
 		CtlCreatedBy:    reqInfo.User,
 		CtlCreatedDate:  time.Now(),
 		CtlModifiedBy:   reqInfo.User,
