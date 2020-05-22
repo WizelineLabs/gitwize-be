@@ -9,6 +9,7 @@ import (
 type Configurations struct {
 	Server   ServerConfigurations
 	Database DatabaseConfigurations
+	Auth     AuthConfigurations
 }
 
 // ServerConfigurations exported
@@ -25,12 +26,18 @@ type DatabaseConfigurations struct {
 	GwDbPort     int
 }
 
-func ReadConfiguration() Configurations {
+// AuthConfigurations exported
+type AuthConfigurations struct {
+	AuthDisable string
+}
+
+var CurConfiguration Configurations
+
+func ReadConfiguration() {
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()
 
 	deployEnv := viper.GetString(gwDeployEnv)
-	var configuration Configurations
 	var gwDbPasswordEnv string
 	// Set the file name of the configurations file
 	switch deployEnv {
@@ -51,11 +58,9 @@ func ReadConfiguration() Configurations {
 		fmt.Printf("Error reading config file, %s", err)
 	}
 
-	err := viper.Unmarshal(&configuration)
+	err := viper.Unmarshal(&CurConfiguration)
 	if err != nil {
 		fmt.Printf("Unable to decode into struct, %v", err)
 	}
-	configuration.Database.GwDbPassword = viper.GetString(gwDbPasswordEnv)
-
-	return configuration
+	CurConfiguration.Database.GwDbPassword = viper.GetString(gwDbPasswordEnv)
 }

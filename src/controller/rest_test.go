@@ -3,10 +3,10 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
+	"gitwize-be/src/configuration"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"regexp"
 	"testing"
 
@@ -28,8 +28,12 @@ func performRequest(r http.Handler, method, path string, body io.Reader, headers
 	return w
 }
 
+func init() {
+	configuration.ReadConfiguration()
+}
+
 func TestPostReposOK(t *testing.T) {
-	os.Setenv("AUTH_DISABLED", "true")
+	configuration.CurConfiguration.Auth.AuthDisable = "true"
 	router := Initialize()
 	posRequest := RepoInfoPost{
 		Name:   "Gitwize",
@@ -49,7 +53,7 @@ func TestPostReposOK(t *testing.T) {
 }
 
 func TestPostRepos_BadRequest(t *testing.T) {
-	os.Setenv("AUTH_DISABLED", "true")
+	configuration.CurConfiguration.Auth.AuthDisable = "true"
 	router := Initialize()
 	posRequest := RepoInfoPost{
 		Name: "Gitwize",
@@ -66,7 +70,7 @@ func TestPostRepos_BadRequest(t *testing.T) {
 }
 
 func TestGetRepo_Unauthorized(t *testing.T) {
-	os.Setenv("AUTH_DISABLED", "false")
+	configuration.CurConfiguration.Auth.AuthDisable = "false"
 	router := Initialize()
 
 	w := performRequest(router, http.MethodGet, "/api/v1/repositories/1", nil)

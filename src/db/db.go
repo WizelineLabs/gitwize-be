@@ -8,13 +8,14 @@ import (
 	"gitwize-be/src/configuration"
 )
 
+var gormDB *gorm.DB
+
 func dbConn() (db *gorm.DB) {
-	config := configuration.ReadConfiguration()
-	user := config.Database.GwDbUser
-	pass := config.Database.GwDbPassword
-	host := config.Database.GwDbHost
-	port := config.Database.GwDbPort
-	dbname := config.Database.GwDbName
+	user := configuration.CurConfiguration.Database.GwDbUser
+	pass := configuration.CurConfiguration.Database.GwDbPassword
+	host := configuration.CurConfiguration.Database.GwDbHost
+	port := configuration.CurConfiguration.Database.GwDbPort
+	dbname := configuration.CurConfiguration.Database.GwDbName
 
 	dsn := fmt.Sprintf("%s:%s@(%s:%d)/%s?parseTime=true&loc=Local", user, pass, host, port, dbname)
 	db, err := gorm.Open("mysql", dsn)
@@ -24,11 +25,9 @@ func dbConn() (db *gorm.DB) {
 	return
 }
 
-func Initialize() *gorm.DB {
-	gormDB := dbConn()
+func Initialize() {
+	gormDB = dbConn()
 
 	// Migrate the schema
-	gormDB.AutoMigrate(&Repository{}, &Metric{})
-
-	return gormDB
+	//gormDB.AutoMigrate(&Repository{}, &Metric{})
 }
