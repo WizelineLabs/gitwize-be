@@ -13,6 +13,7 @@ type Configurations struct {
 	Database DatabaseConfigurations
 	Auth     AuthConfigurations
 	Cypher   CypherConfigurations
+	Endpoint EndpointConfigurations
 }
 
 // ServerConfigurations exported
@@ -36,6 +37,11 @@ type DatabaseConfigurations struct {
 // AuthConfigurations exported
 type AuthConfigurations struct {
 	AuthDisable string
+}
+
+// Endpoint FE exported
+type EndpointConfigurations struct {
+	Frontend string
 }
 
 var CurConfiguration Configurations

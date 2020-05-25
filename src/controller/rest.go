@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	cors "github.com/rs/cors/wrapper/gin"
 	"gitwize-be/src/auth"
 	"gitwize-be/src/configuration"
 	"gitwize-be/src/cypher"
@@ -22,6 +23,24 @@ func getRepos(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, repo)
 	}
+}
+
+func getListRepos(c *gin.Context) {
+	var repos []db.Repository
+	if err := db.GetListRepository(&repos); err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	var repoInfos []RepoInfoGet
+	for _, repo := range repos {
+		repoInfos = append(repoInfos, RepoInfoGet{
+			ID:     repo.ID,
+			Name:   repo.Name,
+			Url:    repo.Url,
+			Status: repo.Status,
+		})
+	}
+	c.JSON(http.StatusOK, repoInfos)
 }
 
 func postRepos(c *gin.Context) {
@@ -139,11 +158,22 @@ func AuthMiddleware(c *gin.Context) {
 	c.Next()
 }
 
+func corsHandler() gin.HandlerFunc {
+	return cors.New(cors.Options{
+		AllowedOrigins:   []string{configuration.CurConfiguration.Endpoint.Frontend},
+		AllowCredentials: true,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "OPTIONS", "HEAD", "DELETE"},
+		AllowedHeaders:   []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+	})
+}
+
 func Initialize() *gin.Engine {
 	db.Initialize()
 
 	ginCont := gin.Default()
 	ginCont.Use(AuthMiddleware)
+	ginCont.Use(corsHandler())
+	ginCont.GET(gwEndPoint, getListRepos)
 	ginCont.GET(gwEndPointGetPutDel, getRepos)
 	ginCont.POST(gwEndPointPost, postRepos)
 	ginCont.PUT(gwEndPointGetPutDel, putRepos)
