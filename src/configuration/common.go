@@ -10,4 +10,6 @@ const (
 	configTypeYaml           = "yaml"
 	configPathFromRootDir    = "src/configuration"
 	configPathFromSubModules = "../configuration"
+	cypherPassPhaseLocal     = "CYPHER_PASS_PHASE_LOCAL"
+	cypherPassPhaseDev       = "CYPHER_PASS_PHASE_DEV"
 )

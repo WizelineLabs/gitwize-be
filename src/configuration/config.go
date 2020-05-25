@@ -10,11 +10,16 @@ type Configurations struct {
 	Server   ServerConfigurations
 	Database DatabaseConfigurations
 	Auth     AuthConfigurations
+	Cypher   CypherConfigurations
 }
 
 // ServerConfigurations exported
 type ServerConfigurations struct {
 	Port string
+}
+
+type CypherConfigurations struct {
+	PassPhase string
 }
 
 // DatabaseConfigurations exported
@@ -39,14 +44,17 @@ func ReadConfiguration() {
 
 	deployEnv := viper.GetString(gwDeployEnv)
 	var gwDbPasswordEnv string
+	var cypherPassPhaseEnv string
 	// Set the file name of the configurations file
 	switch deployEnv {
 	case devEnvironment:
 		viper.SetConfigName(configDev)
 		gwDbPasswordEnv = gwDbPasswordDev
+		cypherPassPhaseEnv = cypherPassPhaseDev
 	default:
 		viper.SetConfigName(configLocal)
 		gwDbPasswordEnv = gwDbPasswordLocal
+		cypherPassPhaseEnv = cypherPassPhaseLocal
 	}
 
 	// Set the path to look for the configurations file
@@ -63,4 +71,5 @@ func ReadConfiguration() {
 		fmt.Printf("Unable to decode into struct, %v", err)
 	}
 	CurConfiguration.Database.GwDbPassword = viper.GetString(gwDbPasswordEnv)
+	CurConfiguration.Cypher.PassPhase = viper.GetString(cypherPassPhaseEnv)
 }
