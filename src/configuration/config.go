@@ -2,6 +2,8 @@ package configuration
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/spf13/viper"
 )
 
@@ -64,6 +66,15 @@ func ReadConfiguration() {
 	viper.SetConfigType(configTypeYaml)
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Printf("Error reading config file, %s", err)
+	}
+
+	// override with Env variables if any
+	for _, k := range viper.AllKeys() {
+		envValue := os.Getenv(k)
+		if envValue != "" {
+			fmt.Printf("Config key overridden by env variable: %s", k)
+			viper.Set(k, envValue)
+		}
 	}
 
 	err := viper.Unmarshal(&CurConfiguration)
