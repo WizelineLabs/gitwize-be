@@ -8,7 +8,7 @@ CREATE TABLE repository (
 	password varchar(256) NULL,
 	ctl_created_date TIMESTAMP NOT NULL,
 	ctl_created_by varchar(256) NOT NULL,
-	ctl_modified_date TIMESTAMP,
+	ctl_modified_date TIMESTAMP NULL,
 	ctl_modified_by varchar(256),
 	PRIMARY KEY (id)
 )
