@@ -3,21 +3,19 @@ package cypher
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/md5"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"io"
 )
 
-func createHash(key string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(key))
-	return hex.EncodeToString(hasher.Sum(nil))
+func createSHA256Hash(key string) []byte {
+	hash := sha256.Sum256([]byte(key))
+	return hash[:]
 }
 
-func encrypt(data []byte, passphrase string) []byte {
-	block, _ := aes.NewCipher([]byte(createHash(passphrase)))
+func aes256Encrypt(data []byte, passphrase string) []byte {
+	block, _ := aes.NewCipher(createSHA256Hash(passphrase))
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		panic(err.Error())
@@ -30,8 +28,8 @@ func encrypt(data []byte, passphrase string) []byte {
 	return ciphertext
 }
 
-func decrypt(data []byte, passphrase string) []byte {
-	key := []byte(createHash(passphrase))
+func aes256Decrypt(data []byte, passphrase string) []byte {
+	key := createSHA256Hash(passphrase)
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(err.Error())
@@ -52,13 +50,13 @@ func decrypt(data []byte, passphrase string) []byte {
 //EncryptString export
 func EncryptString(s, passphase string) string {
 	data := []byte(s)
-	return EncodeBase64(encrypt(data, passphase))
+	return EncodeBase64(aes256Encrypt(data, passphase))
 }
 
 //DecryptString export
 func DecryptString(s, passphase string) string {
 	data := DecodeBase64(s)
-	return string(decrypt(data, passphase))
+	return string(aes256Decrypt(data, passphase))
 }
 
 //EncodeBase64 export
