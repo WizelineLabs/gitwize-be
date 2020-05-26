@@ -57,7 +57,6 @@ func TestPostRepos_BadRequest(t *testing.T) {
 	router := Initialize()
 	posRequest := RepoInfoPost{
 		Name: "Gitwize",
-		Url:  "https://github.com/gitwize",
 		User: "tester",
 	}
 
