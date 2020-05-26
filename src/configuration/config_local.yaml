@@ -9,3 +9,6 @@ database:
 
 auth:
   authDisable: 'true'
+
+endpoint:
+  frontEnd: 'http://localhost:8080'

@@ -1,5 +1,8 @@
 package db
 
+func GetListRepository(repos *[]Repository) error {
+	return gormDB.Find(repos).Error
+}
 func FindRepository(repo *Repository, id string) error {
 	return gormDB.First(&repo, id).Error
 }
