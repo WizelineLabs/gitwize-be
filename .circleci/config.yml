@@ -8,7 +8,6 @@ jobs:
           - GW_DATABASE_SECRET_LOCAL=P@ssword123
       - image: mysql:5.7.22
         environment:
-          - MYSQL_ROOT_PASSWORD=test
           - MYSQL_ALLOW_EMPTY_PASSWORD=true
           - MYSQL_USER=gitwize_user
           - MYSQL_DATABASE=gitwize
