@@ -1,7 +1,7 @@
 version: "3"
 services:
   db:
-    image: mysql:latest
+    image: mysql:5.7.22
     restart: "no"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
