@@ -63,9 +63,15 @@ func postRepos(c *gin.Context) {
 	if err := db.CreateRepository(&createdRepos); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	c.JSON(http.StatusCreated, gin.H{
-		"id": createdRepos.ID,
-	})
+
+	repoInfo := RepoInfoGet{
+		ID:     createdRepos.ID,
+		Name:   createdRepos.Name,
+		Url:    createdRepos.Url,
+		Status: createdRepos.Status,
+	}
+
+	c.JSON(http.StatusCreated, repoInfo)
 }
 
 func putRepos(c *gin.Context) {
