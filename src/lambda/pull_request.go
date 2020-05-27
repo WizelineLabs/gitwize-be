@@ -126,6 +126,10 @@ func updatePRs(prSvc PullRequestService, repoID int, prs []*github.PullRequest, 
 		}
 
 		created := pr.CreatedAt.UTC()
-		insertStmt.Exec(repoID, pr.HTMLURL, pr.Number, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, state, pr.User.Login, created.Year(), created.Month(), created.Day(), created.Hour(), nil, nil, nil, nil)
+		if pr.ClosedAt != nil {
+			insertStmt.Exec(repoID, pr.HTMLURL, pr.Number, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, state, pr.User.Login, created.Year(), created.Month(), created.Day(), created.Hour(), pr.ClosedAt.Year(), pr.ClosedAt.Month(), pr.ClosedAt.Day(), pr.ClosedAt.Hour())
+		} else {
+			insertStmt.Exec(repoID, pr.HTMLURL, pr.Number, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, state, pr.User.Login, created.Year(), created.Month(), created.Day(), created.Hour(), nil, nil, nil, nil)
+		}
 	}
 }
