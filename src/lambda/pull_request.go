@@ -3,6 +3,7 @@ package lambda
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"gitwize-be/src/db"
 	"log"
 	"os"
@@ -44,20 +45,21 @@ func (s *GithubPullRequestService) List(owner string, repo string, opts *github.
 func CollectPRs(prSvc PullRequestService) {
 	// find repo id
 	conn := db.SqlDBConn()
-	rows, _ := conn.Query("SELECT url FROM repository")
+	rows, _ := conn.Query("SELECT id, url FROM repository")
 
 	var url string
+	var id int
 	for rows.Next() {
-		err := rows.Scan(&url)
+		err := rows.Scan(&id, &url)
 		if err != nil {
 			log.Printf("[ERROR] %s", err)
 		} else {
-			CollectPRsFromUrl(prSvc, url)
+			CollectPRsOfRepo(prSvc, id, url, conn)
 		}
 	}
 }
 
-func CollectPRsFromUrl(prSvc PullRequestService, url string) {
+func CollectPRsOfRepo(prSvc PullRequestService, id int, url string, conn *sql.DB) {
 	var owner, repo string
 	if strings.HasPrefix(url, "git") {
 		s := strings.Split(url, ":")[1]
@@ -71,50 +73,60 @@ func CollectPRsFromUrl(prSvc PullRequestService, url string) {
 	}
 	repo = strings.Replace(repo, ".git", "", -1)
 	log.Printf("Collecting PRs: owner=%s, repo=%s", owner, repo)
-	collectPRs(prSvc, owner, repo)
+	collectPRsOfRepo(prSvc, id, owner, repo, conn)
 }
 
-func collectPRs(prSvc PullRequestService, owner string, repo string) {
-	prs, _, err := prSvc.List(owner, repo, &github.PullRequestListOptions{
-		State: "all",
-	})
+func collectPRsOfRepo(prSvc PullRequestService, id int, owner string, repo string, conn *sql.DB) {
+	deleteStmt, err := conn.Prepare("DELETE FROM pull_request WHERE repository_id = ?")
+	defer deleteStmt.Close()
 
+	// delete old data
+	_, err = deleteStmt.Exec(id)
 	if err != nil {
 		log.Printf("[ERROR] %s", err)
 		return
 	}
 
-	// find repo id
-	conn := db.SqlDBConn()
-	rows := conn.QueryRow("SELECT id FROM repository WHERE name = ?", repo) //FIXME repo should have owner
-	var repoID int
-	err = rows.Scan(&repoID)
-
-	if err != nil {
-		log.Printf("[ERROR] %s", err)
-		return
+	// fetch PRs page by page, 100 per_page
+	listOpt := github.ListOptions{
+		Page:    1,
+		PerPage: 100,
 	}
+	for {
+		prs, _, err := prSvc.List(owner, repo, &github.PullRequestListOptions{
+			State:       "all",
+			Sort:        "created",
+			Direction:   "desc",
+			ListOptions: listOpt,
+		})
 
-	updatePRs(prSvc, repoID, prs, conn)
+		var prnumbers []int
+		for _, pr := range prs {
+			prnumbers = append(prnumbers, *pr.Number)
+		}
+		fmt.Println(prnumbers)
+
+		if err != nil {
+			log.Printf("[ERROR] %s", err)
+			return
+		}
+		if len(prs) == 0 {
+			break
+		}
+		insertPRs(prSvc, id, prs, conn)
+
+		listOpt.Page++
+	}
 }
 
-func updatePRs(prSvc PullRequestService, repoID int, prs []*github.PullRequest, conn *sql.DB) {
+func insertPRs(prSvc PullRequestService, repoID int, prs []*github.PullRequest, conn *sql.DB) {
 	// Prepare statements
 	insertStmt, err := conn.Prepare("INSERT INTO pull_request (repository_id, url, pr_no, title, body, head, base, state, created_by, created_year, created_month, created_day, created_hour, closed_year, closed_month, closed_day, closed_hour) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-	deleteStmt, err := conn.Prepare("DELETE FROM pull_request WHERE repository_id = ?")
 	if err != nil {
 		log.Printf("[ERROR] %s", err)
 		return
 	}
 	defer insertStmt.Close()
-	defer deleteStmt.Close()
-
-	// delete old data
-	_, err = deleteStmt.Exec(repoID)
-	if err != nil {
-		log.Printf("[ERROR] %s", err)
-		return
-	}
 
 	// insert again
 	for _, pr := range prs {
