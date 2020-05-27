@@ -1,9 +1,17 @@
+/*
+This module used to fetch Pull requests of git repositories (in repository table),
+currently support github repositories only.
+
+How to run:
+- create a github personal access token and set it to GITHUB_TOKEN env variable
+- call method: CollectPRs(NewGithubPullRequestService())
+*/
+
 package lambda
 
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"gitwize-be/src/db"
 	"log"
 	"os"
@@ -99,12 +107,6 @@ func collectPRsOfRepo(prSvc PullRequestService, id int, owner string, repo strin
 			Direction:   "desc",
 			ListOptions: listOpt,
 		})
-
-		var prnumbers []int
-		for _, pr := range prs {
-			prnumbers = append(prnumbers, *pr.Number)
-		}
-		fmt.Println(prnumbers)
 
 		if err != nil {
 			log.Printf("[ERROR] %s", err)
