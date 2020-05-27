@@ -177,8 +177,8 @@ func Initialize() *gin.Engine {
 	db.Initialize()
 
 	ginCont := gin.Default()
-	ginCont.Use(AuthMiddleware)
 	ginCont.Use(corsHandler())
+	ginCont.Use(AuthMiddleware)
 	ginCont.GET(gwEndPoint, getListRepos)
 	ginCont.GET(gwEndPointGetPutDel, getRepos)
 	ginCont.POST(gwEndPointPost, postRepos)
