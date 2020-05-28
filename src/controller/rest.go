@@ -34,10 +34,11 @@ func getListRepos(c *gin.Context) {
 	var repoInfos []RepoInfoGet
 	for _, repo := range repos {
 		repoInfos = append(repoInfos, RepoInfoGet{
-			ID:     repo.ID,
-			Name:   repo.Name,
-			Url:    repo.Url,
-			Status: repo.Status,
+			ID:          repo.ID,
+			Name:        repo.Name,
+			Url:         repo.Url,
+			Status:      repo.Status,
+			LastUpdated: repo.CtlModifiedDate,
 		})
 	}
 	c.JSON(http.StatusOK, repoInfos)
@@ -65,10 +66,11 @@ func postRepos(c *gin.Context) {
 	}
 
 	repoInfo := RepoInfoGet{
-		ID:     createdRepos.ID,
-		Name:   createdRepos.Name,
-		Url:    createdRepos.Url,
-		Status: createdRepos.Status,
+		ID:          createdRepos.ID,
+		Name:        createdRepos.Name,
+		Url:         createdRepos.Url,
+		Status:      createdRepos.Status,
+		LastUpdated: createdRepos.CtlModifiedDate,
 	}
 
 	c.JSON(http.StatusCreated, repoInfo)

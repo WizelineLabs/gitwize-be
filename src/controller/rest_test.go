@@ -44,7 +44,8 @@ func TestPostReposOK(t *testing.T) {
 	expectedResult := "{\"id\":\\d+," +
 		"\"name\":\"Gitwize\"," +
 		"\"url\":\"https://github.com/gitwize\"," +
-		"\"status\":\"ONGOING\"}"
+		"\"status\":\"ONGOING\"," +
+		"\"last_updated\":\"[0-9:ZT\\+\\-\\.]+\"}"
 
 	b, err := json.Marshal(posRequest)
 	if err != nil {

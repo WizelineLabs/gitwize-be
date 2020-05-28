@@ -23,7 +23,7 @@ var MapNameToTypeMetric = map[string]MetricsType{
 	"lines_added":   LINES_ADDED,
 	"lines_removed": LINES_REMOVED,
 	"commits":       COMMITS,
-	"prs_create":    PRS_CREATED,
+	"prs_created":   PRS_CREATED,
 	"prs_merged":    PRS_MERGED,
 	"prs_rejected":  PRS_REJECTED,
 }
@@ -33,7 +33,7 @@ var MapTypeMetricToName = map[MetricsType]string{
 	LINES_ADDED:   "lines_added",
 	LINES_REMOVED: "lines_removed",
 	COMMITS:       "commits",
-	PRS_CREATED:   "prs_create",
+	PRS_CREATED:   "prs_created",
 	PRS_MERGED:    "prs_merged",
 	PRS_REJECTED:  "prs_rejected",
 }
