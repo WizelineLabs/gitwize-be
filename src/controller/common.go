@@ -1,5 +1,7 @@
 package controller
 
+import "time"
+
 const (
 	gwEndPoint          = "/api/v1/repositories/"
 	gwEndPointGetPutDel = gwEndPoint + "/:id"
@@ -16,8 +18,9 @@ type RepoInfoPost struct {
 }
 
 type RepoInfoGet struct {
-	ID     uint   `json:"id" binding:"required"`
-	Name   string `json:"name" binding:"required"`
-	Url    string `json:"url"  binding:"required"`
-	Status string `json:"status"  binding:"required"`
+	ID          uint      `json:"id" binding:"required"`
+	Name        string    `json:"name" binding:"required"`
+	Url         string    `json:"url"  binding:"required"`
+	Status      string    `json:"status"  binding:"required"`
+	LastUpdated time.Time `json:"last_updated" binding:"required"`
 }
