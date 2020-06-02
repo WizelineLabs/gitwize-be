@@ -1,10 +1,12 @@
 /*
 This module used to fetch Pull requests of git repositories (in repository table),
-currently support github repositories only.
+currently support github repositories only. Auth token is taken from `password` field.
 
 How to run:
-- create a github personal access token and set it to GITHUB_TOKEN env variable
-- call method: CollectPRs(NewGithubPullRequestService())
+- call method: CollectPRs()
+If you want to always use a default github token:
+- Set USE_DEFAULT_API_TOKEN=true
+- Set DEFAULT_GITHUB_TOKEN
 */
 
 package lambda
@@ -12,6 +14,8 @@ package lambda
 import (
 	"context"
 	"database/sql"
+	"gitwize-be/src/configuration"
+	"gitwize-be/src/cypher"
 	"gitwize-be/src/db"
 	"log"
 	"os"
@@ -29,17 +33,21 @@ type GithubPullRequestService struct {
 	githubClient *github.Client
 }
 
-func NewGithubPullRequestService() *GithubPullRequestService {
+func NewGithubPullRequestService(token string) *GithubPullRequestService {
 	return &GithubPullRequestService{
-		githubClient: newGithubClient(),
+		githubClient: newGithubClient(token),
 	}
 }
 
-func newGithubClient() *github.Client {
+func newGithubClient(token string) *github.Client {
 	ctx := context.Background()
 
+	useDefault := os.Getenv("USE_DEFAULT_API_TOKEN")
+	if useDefault == "true" || token == "" {
+		token = os.Getenv("DEFAULT_GITHUB_TOKEN")
+	}
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+		&oauth2.Token{AccessToken: token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
@@ -50,18 +58,31 @@ func (s *GithubPullRequestService) List(owner string, repo string, opts *github.
 	return s.githubClient.PullRequests.List(context.Background(), owner, repo, opts)
 }
 
-func CollectPRs(prSvc PullRequestService) {
+func CollectPRs() {
 	// find repo id
 	conn := db.SqlDBConn()
-	rows, _ := conn.Query("SELECT id, url FROM repository")
+	rows, _ := conn.Query("SELECT id, url, password FROM repository")
 
 	var url string
 	var id int
+	password := sql.NullString{
+		String: "",
+		Valid:  false,
+	}
+	if rows == nil {
+		log.Printf("[WARN] No repositories found")
+		return
+	}
 	for rows.Next() {
-		err := rows.Scan(&id, &url)
+		err := rows.Scan(&id, &url, &password)
+		var token string
+		if password.Valid {
+			token = cypher.DecryptString(password.String, configuration.CurConfiguration.Cypher.PassPhase)
+		}
 		if err != nil {
 			log.Printf("[ERROR] %s", err)
 		} else {
+			prSvc := NewGithubPullRequestService(token)
 			CollectPRsOfRepo(prSvc, id, url, conn)
 		}
 	}
