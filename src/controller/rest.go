@@ -2,18 +2,19 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	cors "github.com/rs/cors/wrapper/gin"
+	"gitwize-be/src/auth"
+	"gitwize-be/src/configuration"
+	"gitwize-be/src/cypher"
 	"gitwize-be/src/db"
 	"net/http"
 	"time"
 )
 
-var dbConnect *gorm.DB
-
 func getRepos(c *gin.Context) {
 	id := c.Param("id")
 	var repo db.Repository
-	if err := dbConnect.First(&repo, id).Error; err != nil {
+	if err := db.FindRepository(&repo, id); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -22,6 +23,25 @@ func getRepos(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, repo)
 	}
+}
+
+func getListRepos(c *gin.Context) {
+	var repos []db.Repository
+	if err := db.GetListRepository(&repos); err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	var repoInfos []RepoInfoGet
+	for _, repo := range repos {
+		repoInfos = append(repoInfos, RepoInfoGet{
+			ID:          repo.ID,
+			Name:        repo.Name,
+			Url:         repo.Url,
+			Status:      repo.Status,
+			LastUpdated: repo.CtlModifiedDate,
+		})
+	}
+	c.JSON(http.StatusOK, repoInfos)
 }
 
 func postRepos(c *gin.Context) {
@@ -35,17 +55,25 @@ func postRepos(c *gin.Context) {
 		Url:             reqInfo.Url,
 		Status:          reqInfo.Status,
 		UserName:        reqInfo.User,
+		Password:        cypher.EncryptString(reqInfo.Password, configuration.CurConfiguration.Cypher.PassPhase),
 		CtlCreatedBy:    reqInfo.User,
 		CtlCreatedDate:  time.Now(),
 		CtlModifiedBy:   reqInfo.User,
 		CtlModifiedDate: time.Now(),
 	}
-	if err := dbConnect.Create(&createdRepos).Error; err != nil {
+	if err := db.CreateRepository(&createdRepos); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	c.JSON(http.StatusCreated, gin.H{
-		"id": createdRepos.ID,
-	})
+
+	repoInfo := RepoInfoGet{
+		ID:          createdRepos.ID,
+		Name:        createdRepos.Name,
+		Url:         createdRepos.Url,
+		Status:      createdRepos.Status,
+		LastUpdated: createdRepos.CtlModifiedDate,
+	}
+
+	c.JSON(http.StatusCreated, repoInfo)
 }
 
 func putRepos(c *gin.Context) {
@@ -57,7 +85,7 @@ func putRepos(c *gin.Context) {
 
 	id := c.Param("id")
 	var repo db.Repository
-	if err := dbConnect.First(&repo, id).Error; err != nil {
+	if err := db.FindRepository(&repo, id); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -70,7 +98,7 @@ func putRepos(c *gin.Context) {
 		repo.Status = reqInfo.Status
 		repo.CtlModifiedBy = reqInfo.User
 		repo.CtlModifiedDate = time.Now()
-		if err := dbConnect.Save(&repo).Error; err != nil {
+		if err := db.UpdateRepository(&repo); err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
 		}
 		c.JSON(http.StatusOK, repo)
@@ -80,14 +108,14 @@ func putRepos(c *gin.Context) {
 func delRepos(c *gin.Context) {
 	id := c.Param("id")
 	var repo db.Repository
-	if err := dbConnect.First(&repo, id).Error; err != nil {
+	if err := db.FindRepository(&repo, id); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	if repo.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + id + " doesn't exist"})
 	} else {
-		if err := dbConnect.Delete(&repo).Error; err != nil {
+		if err := db.DeleteRepository(&repo); err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
 		}
 		c.JSON(http.StatusNoContent, nil)
@@ -95,19 +123,65 @@ func delRepos(c *gin.Context) {
 }
 
 func getStats(c *gin.Context) {
-	id := c.Param("id")
-	metricType := c.DefaultQuery("metric_type", "ALL")
-	c.JSON(http.StatusOK, gin.H{
-		"message":    "Statistic information is read successfully",
-		"id":         id,
-		"metricType": metricType,
+	idRepository := c.Param("id")
+	metricTypeName := c.DefaultQuery("metric_type", "ALL")
+	metricTypeVal, ok := db.MapNameToTypeMetric[metricTypeName]
+	if !ok {
+		metricTypeVal = db.ALL
+	}
+
+	var repo db.Repository
+	if err := db.FindRepository(&repo, idRepository); err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	if repo.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + idRepository + " doesn't exist"})
+	} else {
+		result, err := db.GetMetricBaseOnType(idRepository, metricTypeVal)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, err.Error())
+		} else {
+			repositoryDTO := db.RepositoryDTO{
+				ID:      repo.ID,
+				Name:    repo.Name,
+				Status:  repo.Status,
+				Url:     repo.Url,
+				Metrics: result,
+			}
+			c.JSON(http.StatusOK, repositoryDTO)
+		}
+	}
+}
+
+// AuthMiddleware checks for valid access token
+func AuthMiddleware(c *gin.Context) {
+	authDisabled := configuration.CurConfiguration.Auth.AuthDisable == "true"
+	if !authDisabled && !auth.IsAuthorized(nil, c.Request) {
+		c.AbortWithStatusJSON(401, gin.H{
+			"message.key": "system.unauthorized",
+			"message":     "Unauthorized!",
+		})
+	}
+
+	c.Next()
+}
+
+func corsHandler() gin.HandlerFunc {
+	return cors.New(cors.Options{
+		AllowedOrigins:   []string{configuration.CurConfiguration.Endpoint.Frontend},
+		AllowCredentials: true,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "OPTIONS", "HEAD", "DELETE"},
+		AllowedHeaders:   []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 	})
 }
 
 func Initialize() *gin.Engine {
-	dbConnect = db.Initialize()
+	db.Initialize()
 
 	ginCont := gin.Default()
+	ginCont.Use(corsHandler())
+	ginCont.Use(AuthMiddleware)
+	ginCont.GET(gwEndPoint, getListRepos)
 	ginCont.GET(gwEndPointGetPutDel, getRepos)
 	ginCont.POST(gwEndPointPost, postRepos)
 	ginCont.PUT(gwEndPointGetPutDel, putRepos)

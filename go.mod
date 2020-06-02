@@ -10,6 +10,7 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/lestrrat-go/jwx v1.0.2 // indirect
 	github.com/okta/okta-jwt-verifier-golang v0.1.0
+	github.com/rs/cors v1.7.0
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45

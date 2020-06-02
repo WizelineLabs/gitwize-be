@@ -2,6 +2,8 @@ package configuration
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/spf13/viper"
 )
 
@@ -9,11 +11,18 @@ import (
 type Configurations struct {
 	Server   ServerConfigurations
 	Database DatabaseConfigurations
+	Auth     AuthConfigurations
+	Cypher   CypherConfigurations
+	Endpoint EndpointConfigurations
 }
 
 // ServerConfigurations exported
 type ServerConfigurations struct {
 	Port string
+}
+
+type CypherConfigurations struct {
+	PassPhase string
 }
 
 // DatabaseConfigurations exported
@@ -25,21 +34,35 @@ type DatabaseConfigurations struct {
 	GwDbPort     int
 }
 
-func ReadConfiguration() Configurations {
+// AuthConfigurations exported
+type AuthConfigurations struct {
+	AuthDisable string
+}
+
+// Endpoint FE exported
+type EndpointConfigurations struct {
+	Frontend string
+}
+
+var CurConfiguration Configurations
+
+func ReadConfiguration() {
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()
 
 	deployEnv := viper.GetString(gwDeployEnv)
-	var configuration Configurations
 	var gwDbPasswordEnv string
+	var cypherPassPhaseEnv string
 	// Set the file name of the configurations file
 	switch deployEnv {
 	case devEnvironment:
 		viper.SetConfigName(configDev)
 		gwDbPasswordEnv = gwDbPasswordDev
+		cypherPassPhaseEnv = cypherPassPhaseDev
 	default:
 		viper.SetConfigName(configLocal)
 		gwDbPasswordEnv = gwDbPasswordLocal
+		cypherPassPhaseEnv = cypherPassPhaseLocal
 	}
 
 	// Set the path to look for the configurations file
@@ -51,11 +74,19 @@ func ReadConfiguration() Configurations {
 		fmt.Printf("Error reading config file, %s", err)
 	}
 
-	err := viper.Unmarshal(&configuration)
+	// override with Env variables if any
+	for _, k := range viper.AllKeys() {
+		envValue := os.Getenv(k)
+		if envValue != "" {
+			fmt.Printf("Config key overridden by env variable: %s", k)
+			viper.Set(k, envValue)
+		}
+	}
+
+	err := viper.Unmarshal(&CurConfiguration)
 	if err != nil {
 		fmt.Printf("Unable to decode into struct, %v", err)
 	}
-	configuration.Database.GwDbPassword = viper.GetString(gwDbPasswordEnv)
-
-	return configuration
+	CurConfiguration.Database.GwDbPassword = viper.GetString(gwDbPasswordEnv)
+	CurConfiguration.Cypher.PassPhase = viper.GetString(cypherPassPhaseEnv)
 }
