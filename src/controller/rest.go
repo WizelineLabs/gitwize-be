@@ -7,11 +7,32 @@ import (
 	"gitwize-be/src/configuration"
 	"gitwize-be/src/cypher"
 	"gitwize-be/src/db"
+	"gitwize-be/src/lambda"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
 
+func posAdminOperation(c *gin.Context) {
+	opId, err := strconv.Atoi(c.Param("op_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	adminKey := c.DefaultQuery("admin_key", "")
+	if adminKey != os.Getenv("ADMIN_OP_KEY") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Admin key is not correct"})
+		return
+	}
+	switch AdminOperation(opId) {
+	case UPDATE_METRIC_TABLE:
+		lambda.CollectPRs()
+		c.JSON(http.StatusOK, gin.H{"message": "Updating metric table success"})
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad Admin Operation"})
+	}
+}
 func getRepos(c *gin.Context) {
 	id := c.Param("id")
 	var repo db.Repository
@@ -198,5 +219,6 @@ func Initialize() *gin.Engine {
 	ginCont.PUT(gwEndPointGetPutDel, putRepos)
 	ginCont.DELETE(gwEndPointGetPutDel, delRepos)
 	ginCont.GET(statsEndPoint, getStats)
+	ginCont.POST(gwEndPointAdmin, posAdminOperation)
 	return ginCont
 }
