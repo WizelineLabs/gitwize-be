@@ -23,7 +23,7 @@ func UpdateDataForRepo(repoID int, repoURL, repoUser, repoPass, branch string, d
 	commitIter := getCommitIterFromBranch(r, branch, dateRange)
 	cDtos, fDtos := getDtosFromCommitIter(commitIter, repoID)
 	log.Println("\ndto size:", len(cDtos), len(fDtos))
-	conn := db.DBConn()
+	conn := db.SqlDBConn()
 	defer conn.Close()
 	executeMulipleBulks(cDtos, conn)
 }
@@ -35,7 +35,7 @@ func LoadLocalRepo(repoID int, repoPath, branch string, dateRange DateRange) {
 	commitIter := getCommitIterFromBranch(r, branch, dateRange)
 	cDtos, fDtos := getDtosFromCommitIter(commitIter, repoID)
 	log.Println("\ndto size:", len(cDtos), len(fDtos))
-	conn := db.DBConn()
+	conn := db.SqlDBConn()
 	executeMulipleBulks(cDtos, conn)
 }
 
