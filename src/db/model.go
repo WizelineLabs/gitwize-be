@@ -62,11 +62,11 @@ func (Repository) TableName() string {
 }
 
 type RepositoryDTO struct {
-	ID      uint                `json:"id"`
-	Name    string              `json:"name"`
-	Url     string              `json:"url"`
-	Status  string              `json:"status"`
-	Metrics map[string][]Metric `json:"metric"`
+	ID      uint                   `json:"id"`
+	Name    string                 `json:"name"`
+	Url     string                 `json:"url"`
+	Status  string                 `json:"status"`
+	Metrics map[string][]MetricDTO `json:"metric"`
 }
 
 type Metric struct {
@@ -76,19 +76,17 @@ type Metric struct {
 	Type             MetricsType `gorm:"column:type" json:"type"`
 	Value            uint64      `gorm:"column:value" json:"value"`
 	ContributorEmail string      `gorm:"column:contributor_email" json:"contributor_email"`
-	Year             uint        `gorm:"column:year" json:"year"`
-	Month            uint        `gorm:"column:month" json:"month"`
-	Day              uint        `gorm:"column:day" json:"day"`
-	Hour             uint        `gorm:"column:hour" json:"hour"`
+	Year             int         `gorm:"column:year" json:"year"`
+	Month            int         `gorm:"column:month" json:"month"`
+	Day              int         `gorm:"column:day" json:"day"`
+	Hour             int         `gorm:"column:hour" json:"hour"`
 }
 
 type MetricDTO struct {
-	ID           uint        `json:"id"`
-	RepositoryID int         `json:"repository_id"`
-	BranchName   string      `json:"branch"`
-	Type         MetricsType `json:"type"`
-	Value        uint64      `json:"value"`
-	AsOfDate     time.Time   `json:"as_of_date"`
+	BranchName string      `json:"branch"`
+	Type       MetricsType `json:"type"`
+	Value      uint64      `json:"value"`
+	AsOfDate   string      `json:"as_of_date"`
 }
 
 func (Metric) TableName() string {

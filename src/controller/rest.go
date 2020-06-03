@@ -8,6 +8,7 @@ import (
 	"gitwize-be/src/cypher"
 	"gitwize-be/src/db"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -130,6 +131,16 @@ func getStats(c *gin.Context) {
 		metricTypeVal = db.ALL
 	}
 
+	from, err := strconv.Atoi(c.Query("date_from"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	to, err := strconv.Atoi(c.Query("date_to"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+	}
+
 	var repo db.Repository
 	if err := db.FindRepository(&repo, idRepository); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
@@ -137,7 +148,7 @@ func getStats(c *gin.Context) {
 	if repo.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + idRepository + " doesn't exist"})
 	} else {
-		result, err := db.GetMetricBaseOnType(idRepository, metricTypeVal)
+		result, err := db.GetMetricBaseOnType(idRepository, metricTypeVal, int64(from), int64(to))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
 		} else {
