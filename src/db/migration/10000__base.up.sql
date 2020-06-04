@@ -9,6 +9,7 @@ CREATE TABLE repository (
 	ctl_created_by varchar(256) NOT NULL,
 	ctl_modified_date TIMESTAMP,
 	ctl_modified_by varchar(256),
+	ctl_last_metric_updated TIMESTAMP NULL,
 	PRIMARY KEY (id)
 )
 ENGINE=InnoDB
@@ -20,7 +21,10 @@ CREATE TABLE metric (
 	repository_id INT NOT NULL,
 	branch varchar(256),
 	type varchar(32) NOT NULL,
-	as_of_date TIMESTAMP NOT NULL,
+	year INT NOT NULL,
+	month INT NOT NULL,
+	day INT NOT NULL,
+	hour INT NOT NULL,
 	value BIGINT NOT NULL,
 	PRIMARY KEY (id),
     FOREIGN KEY (repository_id) REFERENCES repository(id)

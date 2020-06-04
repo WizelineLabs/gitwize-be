@@ -7,15 +7,38 @@ import (
 	"gitwize-be/src/configuration"
 	"gitwize-be/src/cypher"
 	"gitwize-be/src/db"
+	"gitwize-be/src/lambda"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 )
 
+func posAdminOperation(c *gin.Context) {
+	opId, err := strconv.Atoi(c.Param("op_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	adminKey := c.DefaultQuery("admin_key", "")
+	if adminKey != os.Getenv("ADMIN_OP_KEY") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Admin key is not correct"})
+		return
+	}
+	switch AdminOperation(opId) {
+	case UPDATE_METRIC_TABLE:
+		lambda.CollectPRs()
+		c.JSON(http.StatusOK, gin.H{"message": "Updating metric table success"})
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad Admin Operation"})
+	}
+}
 func getRepos(c *gin.Context) {
 	id := c.Param("id")
 	var repo db.Repository
 	if err := db.FindRepository(&repo, id); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	if repo.ID == 0 {
@@ -29,6 +52,7 @@ func getListRepos(c *gin.Context) {
 	var repos []db.Repository
 	if err := db.GetListRepository(&repos); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	var repoInfos []RepoInfoGet
@@ -51,18 +75,20 @@ func postRepos(c *gin.Context) {
 		return
 	}
 	createdRepos := db.Repository{
-		Name:            reqInfo.Name,
-		Url:             reqInfo.Url,
-		Status:          reqInfo.Status,
-		UserName:        reqInfo.User,
-		Password:        cypher.EncryptString(reqInfo.Password, configuration.CurConfiguration.Cypher.PassPhase),
-		CtlCreatedBy:    reqInfo.User,
-		CtlCreatedDate:  time.Now(),
-		CtlModifiedBy:   reqInfo.User,
-		CtlModifiedDate: time.Now(),
+		Name:                 reqInfo.Name,
+		Url:                  reqInfo.Url,
+		Status:               reqInfo.Status,
+		UserName:             reqInfo.User,
+		Password:             cypher.EncryptString(reqInfo.Password, configuration.CurConfiguration.Cypher.PassPhase),
+		CtlCreatedBy:         reqInfo.User,
+		CtlCreatedDate:       time.Now(),
+		CtlModifiedBy:        reqInfo.User,
+		CtlModifiedDate:      time.Now(),
+		CtlLastMetricUpdated: time.Now(),
 	}
 	if err := db.CreateRepository(&createdRepos); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	repoInfo := RepoInfoGet{
@@ -87,6 +113,7 @@ func putRepos(c *gin.Context) {
 	var repo db.Repository
 	if err := db.FindRepository(&repo, id); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	if repo.ID == 0 {
@@ -110,6 +137,7 @@ func delRepos(c *gin.Context) {
 	var repo db.Repository
 	if err := db.FindRepository(&repo, id); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	if repo.ID == 0 {
@@ -130,16 +158,31 @@ func getStats(c *gin.Context) {
 		metricTypeVal = db.ALL
 	}
 
+	from, err := strconv.Atoi(c.Query("date_from"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	to, err := strconv.Atoi(c.Query("date_to"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
 	var repo db.Repository
 	if err := db.FindRepository(&repo, idRepository); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	if repo.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + idRepository + " doesn't exist"})
+		return
 	} else {
-		result, err := db.GetMetricBaseOnType(idRepository, metricTypeVal)
+		result, err := db.GetMetricBaseOnType(idRepository, metricTypeVal, int64(from), int64(to))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
+			return
 		} else {
 			repositoryDTO := db.RepositoryDTO{
 				ID:      repo.ID,
@@ -187,5 +230,6 @@ func Initialize() *gin.Engine {
 	ginCont.PUT(gwEndPointGetPutDel, putRepos)
 	ginCont.DELETE(gwEndPointGetPutDel, delRepos)
 	ginCont.GET(statsEndPoint, getStats)
+	ginCont.POST(gwEndPointAdmin, posAdminOperation)
 	return ginCont
 }

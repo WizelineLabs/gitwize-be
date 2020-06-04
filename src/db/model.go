@@ -44,16 +44,17 @@ const (
 )
 
 type Repository struct {
-	ID              uint      `gorm:"column:id;primary_key" json:"id"`
-	Name            string    `gorm:"column:name" json:"name"`
-	Url             string    `gorm:"column:url" json:"url"`
-	Status          string    `gorm:"column:status" json:"status"`
-	UserName        string    `gorm:"column:username" json:"username"`
-	Password        string    `gorm:"column:password" json:"password"`
-	CtlCreatedDate  time.Time `gorm:"column:ctl_created_date" json:"ctl_created_date"`
-	CtlCreatedBy    string    `gorm:"column:ctl_created_by" json:"ctl_created_by"`
-	CtlModifiedDate time.Time `gorm:"column:ctl_modified_date" json:"ctl_modified_date"`
-	CtlModifiedBy   string    `gorm:"column:ctl_modified_by" json:"ctl_modified_by"`
+	ID                   uint      `gorm:"column:id;primary_key" json:"id"`
+	Name                 string    `gorm:"column:name" json:"name"`
+	Url                  string    `gorm:"column:url" json:"url"`
+	Status               string    `gorm:"column:status" json:"status"`
+	UserName             string    `gorm:"column:username" json:"username"`
+	Password             string    `gorm:"column:password" json:"password"`
+	CtlCreatedDate       time.Time `gorm:"type:timestamp;column:ctl_created_date" json:"ctl_created_date"`
+	CtlCreatedBy         string    `gorm:"column:ctl_created_by" json:"ctl_created_by"`
+	CtlModifiedDate      time.Time `gorm:"type:timestamp;column:ctl_modified_date" json:"ctl_modified_date"`
+	CtlModifiedBy        string    `gorm:"column:ctl_modified_by" json:"ctl_modified_by"`
+	CtlLastMetricUpdated time.Time `gorm:"type:timestamp;column:ctl_last_metric_updated" json:"ctl_last_metric_updated"`
 }
 
 func (Repository) TableName() string {
@@ -61,20 +62,31 @@ func (Repository) TableName() string {
 }
 
 type RepositoryDTO struct {
-	ID      uint                `json:"id"`
-	Name    string              `json:"name"`
-	Url     string              `json:"url"`
-	Status  string              `json:"status"`
-	Metrics map[string][]Metric `json:"metric"`
+	ID      uint                   `json:"id"`
+	Name    string                 `json:"name"`
+	Url     string                 `json:"url"`
+	Status  string                 `json:"status"`
+	Metrics map[string][]MetricDTO `json:"metric"`
 }
 
 type Metric struct {
-	ID           uint        `gorm:"column:id;primary_key" json:"id"`
-	RepositoryID int         `gorm:"column:repository_id" json:"repository_id"`
-	BranchName   string      `gorm:"column:branch;index:branch" json:"branch"`
-	Type         MetricsType `gorm:"column:type" json:"type"`
-	Value        uint64      `gorm:"column:value" json:"value"`
-	AsOfDate     time.Time   `gorm:"column:as_of_date" json:"as_of_date"`
+	ID               uint        `gorm:"column:id;primary_key" json:"id"`
+	RepositoryID     int         `gorm:"column:repository_id" json:"repository_id"`
+	BranchName       string      `gorm:"column:branch;index:branch" json:"branch"`
+	Type             MetricsType `gorm:"column:type" json:"type"`
+	Value            uint64      `gorm:"column:value" json:"value"`
+	ContributorEmail string      `gorm:"column:contributor_email" json:"contributor_email"`
+	Year             int         `gorm:"column:year" json:"year"`
+	Month            int         `gorm:"column:month" json:"month"`
+	Day              int         `gorm:"column:day" json:"day"`
+	Hour             int         `gorm:"column:hour" json:"hour"`
+}
+
+type MetricDTO struct {
+	BranchName string      `json:"branch"`
+	Type       MetricsType `json:"type"`
+	Value      uint64      `json:"value"`
+	AsOfDate   string      `json:"as_of_date"`
 }
 
 func (Metric) TableName() string {
