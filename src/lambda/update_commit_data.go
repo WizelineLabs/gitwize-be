@@ -10,9 +10,9 @@ import (
 	"time"
 )
 
+// UpdateDataForRepo update data for public/private remote repo using in memory clone
 func UpdateDataForRepo(repoID int, repoURL, repoUser, repoPass, branch string, dateRange DateRange) {
 	defer timeTrack(time.Now(), "UpdateDataForRepo")
-
 	var r *git.Repository
 	if len(repoPass) == 0 {
 		r = getPublicRepo(repoURL)
@@ -21,37 +21,38 @@ func UpdateDataForRepo(repoID int, repoURL, repoUser, repoPass, branch string, d
 		r = getPrivateRepo(repoURL, repoUser, accessToken)
 	}
 	commitIter := getCommitIterFromBranch(r, branch, dateRange)
-	cDtos, fDtos := getDtosFromCommitIter(commitIter, repoID)
-	log.Println("\ndto size:", len(cDtos), len(fDtos))
+	updateCommitData(commitIter, repoID)
+}
+
+func updateCommitData(commitIter object.CommitIter, repoID int) {
+	defer timeTrack(time.Now(), "updateCommitData")
 	conn := db.SqlDBConn()
 	defer conn.Close()
-	executeMulipleBulks(cDtos, conn)
-}
 
-func LoadLocalRepo(repoID int, repoPath, branch string, dateRange DateRange) {
-	defer timeTrack(time.Now(), "LoadLocalRepo")
-
-	r := getRepoLocal(repoPath)
-	commitIter := getCommitIterFromBranch(r, branch, dateRange)
-	cDtos, fDtos := getDtosFromCommitIter(commitIter, repoID)
-	log.Println("\ndto size:", len(cDtos), len(fDtos))
-	conn := db.SqlDBConn()
-	executeMulipleBulks(cDtos, conn)
-}
-
-func getDtosFromCommitIter(commitIter object.CommitIter, repoID int) (cDtos []commitDto, fDtos []fileStatDTO) {
-	defer timeTrack(time.Now(), "getDtosFromCommitIter")
-
+	dtos := []commitDto{}
 	err := commitIter.ForEach(func(c *object.Commit) error {
-		dto := getCommitDTO(c)
-		dto.RepositoryID = repoID
-		cDtos = append(cDtos, dto)
-		fDtos = append(fDtos, getFileStatDTO(c, repoID)...)
+		if len(dtos) == batchSize {
+			executeBulkStatement(dtos, conn)
+			dtos = []commitDto{}
+		} else {
+			dto := getCommitDTO(c)
+			dto.RepositoryID = repoID
+			dtos = append(dtos, dto)
+		}
 		return nil
 	})
-
 	if err != nil {
-		panic(err.Error())
+		log.Panicln(err.Error())
 	}
-	return cDtos, fDtos
+	if len(dtos) > 0 {
+		executeBulkStatement(dtos, conn)
+	}
+}
+
+// LoadLocalRepo load data for a local repo already clone on File System
+func LoadLocalRepo(repoID int, repoPath, branch string, dateRange DateRange) {
+	defer timeTrack(time.Now(), "LoadLocalRepo")
+	r := getRepoLocal(repoPath)
+	commitIter := getCommitIterFromBranch(r, branch, dateRange)
+	updateCommitData(commitIter, repoID)
 }

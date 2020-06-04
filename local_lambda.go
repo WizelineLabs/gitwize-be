@@ -18,6 +18,7 @@ func main2() {
 	// url := "git@github.com:golang/go.git"
 	repoID := 2
 	url := "git@github.com:go-git/go-git.git"
-	dateRange := lambda.GetLastNDayDateRange(3)
+	dateRange := lambda.GetLastNDayDateRange(30)
+	// dateRange := lambda.GetFullGitDateRange()
 	lambda.UpdateDataForRepo(repoID, url, "", "", "", dateRange)
 }

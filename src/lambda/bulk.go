@@ -2,6 +2,7 @@ package lambda
 
 import (
 	"database/sql"
+	"log"
 	"strings"
 	"time"
 )
@@ -25,28 +26,10 @@ func executeBulkStatement(dtos []commitDto, conn *sql.DB) {
 	defer timeTrack(time.Now(), "executeBulkStatement")
 
 	statement, valArgs := generateBulkCommitStatement(dtos)
-	insertStmt, err := conn.Prepare(statement)
+	result, err := conn.Exec(statement, valArgs...)
 	if err != nil {
-		panic(err.Error())
+		log.Panicln(err.Error())
 	}
-	defer insertStmt.Close()
-
-	_, err = insertStmt.Exec(valArgs...)
-	if err != nil {
-		panic(err.Error())
-	}
-}
-
-func executeMulipleBulks(dtos []commitDto, conn *sql.DB) {
-	defer timeTrack(time.Now(), "executeMulipleBulks")
-
-	start, end, size := 0, batchSize, len(dtos)
-	for {
-		if end >= size {
-			executeBulkStatement(dtos[start:size], conn)
-			return
-		}
-		executeBulkStatement(dtos[start:end], conn)
-		start, end = end, end+batchSize
-	}
+	rows, _ := result.RowsAffected()
+	log.Println("number rows affected ", rows)
 }
