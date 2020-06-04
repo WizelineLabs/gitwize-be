@@ -95,3 +95,29 @@ func getRepoLocal(repoPath string) *git.Repository {
 	}
 	return r
 }
+
+// GitCloneLocal clone repo to local file sys
+func GitCloneLocal(directory, publicURL string) {
+	defer timeTrack(time.Now(), "GitCloneLocal")
+	r, err := git.PlainClone(directory, false, &git.CloneOptions{
+		URL:               publicURL,
+		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+		Progress: os.Stdout,
+	})
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// ... retrieving the branch being pointed by HEAD
+	ref, err := r.Head()
+	if err != nil {
+		log.Panic(err)
+	}
+	// ... retrieving the commit object
+	commit, err := r.CommitObject(ref.Hash())
+	if err != nil {
+		log.Panic(err)
+	}
+	log.Println("commit", commit)
+}
