@@ -34,8 +34,31 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COLLATE=utf8_general_ci;
 
-INSERT INTO repository(name,status,url,username,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by)
-    VALUES ("gitwize","ONGOING","https://github.com/gitwize","tester1",now(),"tester1",now(),"tester1");
+CREATE TABLE pull_request (
+    repository_id INT NOT NULL,
+    url varchar(256) NOT NULL,
+    pr_no INT NOT NULL,
+    title varchar(256) NOT NULL,
+    body varchar(1000),
+    head varchar(256),
+    base varchar(256),
+    state varchar(32) NOT NULL,
+    created_by varchar(256) NOT NULL,
+    created_year int NOT NULL,
+    created_month int NOT NULL,
+    created_day int NOT NULL,
+    created_hour int NOT NULL,
+    closed_year int,
+    closed_month int,
+    closed_day int,
+    closed_hour int
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8
+COLLATE=utf8_general_ci;
+
+INSERT INTO repository(name,status,url,username,password,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by)
+    VALUES ("gitwize","ONGOING","https://github.com/wizeline/gitwize-be.git","tester1","NQR0ULDjGC7YGrQHjwY2yODIdUZj+6/K1Ed3vmseInxts0vxEg==",now(),"tester1",now(),"tester1");
 INSERT INTO repository(name,status,url,username,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by)
     VALUES ("gitwize2","ONGOING","https://github.com/gitwize2","tester2",now(),"tester2",now(),"tester2");
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,100);

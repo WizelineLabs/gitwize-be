@@ -7,13 +7,14 @@ CREATE TABLE pull_request (
     head varchar(256),
     base varchar(256),
     state varchar(32) NOT NULL,
+    created_by varchar(256) NOT NULL,
     created_year int NOT NULL,
     created_month int NOT NULL,
-    created_date int NOT NULL,
+    created_day int NOT NULL,
     created_hour int NOT NULL,
     closed_year int,
     closed_month int,
-    closed_date int,
+    closed_day int,
     closed_hour int
 )
 ENGINE=InnoDB

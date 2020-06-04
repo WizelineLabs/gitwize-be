@@ -161,10 +161,22 @@ func insertPRs(prSvc PullRequestService, repoID int, prs []*github.PullRequest, 
 		}
 
 		created := pr.CreatedAt.UTC()
+		yearCreated := created.Year()
+		monthCreated := yearCreated*100 + int(created.Month())
+		dayCreated := monthCreated*100 + created.Day()
+		hourCreated := dayCreated*100 + created.Hour()
 		if pr.ClosedAt != nil {
-			insertStmt.Exec(repoID, pr.HTMLURL, pr.Number, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, state, pr.User.Login, created.Year(), created.Month(), created.Day(), created.Hour(), pr.ClosedAt.Year(), pr.ClosedAt.Month(), pr.ClosedAt.Day(), pr.ClosedAt.Hour())
+			yearClosed := pr.ClosedAt.Year()
+			monthClosed := yearClosed*100 + int(pr.ClosedAt.Month())
+			dayClosed := monthClosed*100 + pr.ClosedAt.Day()
+			hourClosed := dayClosed*100 + pr.ClosedAt.Hour()
+			insertStmt.Exec(repoID, pr.HTMLURL, pr.Number, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, state, pr.User.Login,
+				yearCreated, monthCreated, dayCreated, hourCreated,
+				yearClosed, monthClosed, dayClosed, hourClosed)
 		} else {
-			insertStmt.Exec(repoID, pr.HTMLURL, pr.Number, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, state, pr.User.Login, created.Year(), created.Month(), created.Day(), created.Hour(), nil, nil, nil, nil)
+			insertStmt.Exec(repoID, pr.HTMLURL, pr.Number, pr.Title, pr.Body, pr.Head.Ref, pr.Base.Ref, state, pr.User.Login,
+				yearCreated, monthCreated, dayCreated, hourCreated,
+				nil, nil, nil, nil)
 		}
 	}
 }

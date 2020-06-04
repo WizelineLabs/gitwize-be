@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func GetMetricBaseOnType(idRepository string, metricTypeVal MetricsType, dateTsFrom int64, dateTsTo int64) (map[string][]MetricDTO, error) {
+func GetMetricBaseOnType(idRepository string, metricTypeVal MetricsType, epochFrom int64, epochTo int64) (map[string][]MetricDTO, error) {
 	result := make(map[string][]MetricDTO)
 	var metricTypes map[MetricsType]string
 	if metricTypeVal == ALL {
@@ -15,8 +15,8 @@ func GetMetricBaseOnType(idRepository string, metricTypeVal MetricsType, dateTsF
 		metricTypes[metricTypeVal] = MapTypeMetricToName[metricTypeVal]
 	}
 
-	dateFrom := time.Unix(dateTsFrom, 0)
-	dateTo := time.Unix(dateTsTo, 0)
+	dateFrom := time.Unix(epochFrom, 0)
+	dateTo := time.Unix(epochTo, 0)
 	yearFrom, monthFrom, dayFrom, hourFrom := dateFrom.Year(), int(dateFrom.Month()), dateFrom.Day(), dateFrom.Hour()
 	from := ((yearFrom*100+monthFrom)*100+dayFrom)*100 + hourFrom
 	yearTo, monthTo, dayTo, hourTo := dateTo.Year(), int(dateTo.Month()), dateTo.Day(), dateTo.Hour()

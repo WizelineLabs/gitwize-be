@@ -32,7 +32,7 @@ func Initialize() {
 	gormDB = dbConn()
 
 	// Migrate the schema
-	gormDB.AutoMigrate(&Repository{}, &Metric{})
+	//gormDB.AutoMigrate(&Repository{}, &Metric{})
 }
 
 func SqlDBConn() (db *sql.DB) {
