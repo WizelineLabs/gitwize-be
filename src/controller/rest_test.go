@@ -51,7 +51,7 @@ func TestPostReposOK(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	w := performRequest(router, http.MethodPost, gwEndPointPost, bytes.NewReader(b))
+	w := performRequest(router, http.MethodPost, gwEndPointRepository+gwRepoPost, bytes.NewReader(b))
 	assert.Equal(t, http.StatusCreated, w.Code)
 	assert.Regexp(t, regexp.MustCompile(expectedResult), w.Body.String())
 }
@@ -68,7 +68,7 @@ func TestPostRepos_BadRequest(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	w := performRequest(router, http.MethodPost, gwEndPointPost, bytes.NewReader(b))
+	w := performRequest(router, http.MethodPost, gwEndPointRepository+gwRepoPost, bytes.NewReader(b))
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 

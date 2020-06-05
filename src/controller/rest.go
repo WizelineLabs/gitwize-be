@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -20,7 +21,14 @@ func posAdminOperation(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	adminKey := c.DefaultQuery("admin_key", "")
+
+	authHeader := c.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Admin key does not exist"})
+		return
+	}
+
+	adminKey := strings.Split(authHeader, "Bearer ")[1]
 	if adminKey != os.Getenv("ADMIN_OP_KEY") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Admin key is not correct"})
 		return
@@ -44,7 +52,13 @@ func getRepos(c *gin.Context) {
 	if repo.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + id + " doesn't exist"})
 	} else {
-		c.JSON(http.StatusOK, repo)
+		c.JSON(http.StatusOK, RepoInfoGet{
+			ID:          repo.ID,
+			Name:        repo.Name,
+			Url:         repo.Url,
+			Status:      repo.Status,
+			LastUpdated: repo.CtlModifiedDate,
+		})
 	}
 }
 
@@ -223,13 +237,22 @@ func Initialize() *gin.Engine {
 
 	ginCont := gin.Default()
 	ginCont.Use(corsHandler())
-	ginCont.Use(AuthMiddleware)
-	ginCont.GET(gwEndPoint, getListRepos)
-	ginCont.GET(gwEndPointGetPutDel, getRepos)
-	ginCont.POST(gwEndPointPost, postRepos)
-	ginCont.PUT(gwEndPointGetPutDel, putRepos)
-	ginCont.DELETE(gwEndPointGetPutDel, delRepos)
-	ginCont.GET(statsEndPoint, getStats)
-	ginCont.POST(gwEndPointAdmin, posAdminOperation)
+
+	admin := ginCont.Group(gwEndPointAdmin)
+	{
+		admin.POST(gwAdminOp, posAdminOperation)
+	}
+
+	repoApi := ginCont.Group(gwEndPointRepository)
+	{
+		repoApi.Use(AuthMiddleware)
+		repoApi.GET(gwRepoPost, getListRepos)
+		repoApi.GET(gwRepoGetPutDel, getRepos)
+		repoApi.POST(gwRepoPost, postRepos)
+		repoApi.PUT(gwRepoGetPutDel, putRepos)
+		repoApi.DELETE(gwRepoGetPutDel, delRepos)
+		repoApi.GET(gwRepoStats, getStats)
+	}
+
 	return ginCont
 }
