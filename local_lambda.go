@@ -27,5 +27,3 @@ func main2() {
 	dateRange2 := lambda.GetLastNDayDateRange(300)
 	lambda.LoadLocalRepo(rID2, directory, "", dateRange2)
 }
-
-

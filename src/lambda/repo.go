@@ -102,7 +102,7 @@ func GitCloneLocal(directory, publicURL string) {
 	r, err := git.PlainClone(directory, false, &git.CloneOptions{
 		URL:               publicURL,
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
-		Progress: os.Stdout,
+		Progress:          os.Stdout,
 	})
 
 	if err != nil {
