@@ -38,7 +38,7 @@ func GetMetricBaseOnType(idRepository string, metricTypeVal MetricsType, epochFr
 				BranchName: metric.BranchName,
 				Type:       metric.Type,
 				Value:      metric.Value,
-				AsOfDate:   strconv.Itoa(metric.Day%100) + "/" + strconv.Itoa(metric.Month%100) + "/" + strconv.Itoa(metric.Year),
+				AsOfDate:   strconv.Itoa(metric.Month%100) + "/" + strconv.Itoa(metric.Day%100) + "/" + strconv.Itoa(metric.Year),
 			})
 		}
 		result[metricTypeName] = metricDTOs
