@@ -10,6 +10,7 @@ const (
 	fileStatTable = "file_stat_data"
 	gitDateFormat = "2006-01-02"
 	batchSize     = 1000
+	directory     = "/tmp/"
 )
 
 type DateRange struct {

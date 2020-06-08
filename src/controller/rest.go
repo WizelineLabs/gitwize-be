@@ -37,7 +37,6 @@ func posAdminOperation(c *gin.Context) {
 	case UPDATE_METRIC_TABLE:
 		lambda.CollectPRs()
 		lambda.UpdateCommitDataAllRepos()
-		// TODO: add updating commit & file_stat tables
 		db.UpdateMetricTable()
 		c.JSON(http.StatusOK, gin.H{"message": "Updating metric table success"})
 	default:
