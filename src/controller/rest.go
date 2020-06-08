@@ -36,6 +36,8 @@ func posAdminOperation(c *gin.Context) {
 	switch AdminOperation(opId) {
 	case UPDATE_METRIC_TABLE:
 		lambda.CollectPRs()
+		// TODO: add updating commit & file_stat tables
+		db.UpdateMetricTable()
 		c.JSON(http.StatusOK, gin.H{"message": "Updating metric table success"})
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad Admin Operation"})
