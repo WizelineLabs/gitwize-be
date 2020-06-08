@@ -23,7 +23,7 @@ func getPrivateRepo(url, user, token string) *git.Repository {
 		Progress: os.Stdout,
 	})
 	if err != nil {
-		log.Fatalln(err)
+		log.Panic(err)
 	}
 	return r
 }
@@ -35,7 +35,7 @@ func getPublicRepo(url string) *git.Repository {
 		Progress: os.Stdout,
 	})
 	if err != nil {
-		log.Fatalln(err)
+		log.Panic(err)
 	}
 	return r
 }

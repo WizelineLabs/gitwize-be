@@ -20,10 +20,11 @@ func main2() {
 	// dateRange1 := lambda.GetLastNDayDateRange(30)
 	// lambda.UpdateDataForRepo(rID1, url1, "", "", "", dateRange1)
 
-	directory := "/Users/sang.dinh/WorkSpace/GitWize/example-repos/go"
+	// directory := "/Users/sang.dinh/WorkSpace/GitWize/example-repos/go"
 	// url = "git@github.com:golang/go.git"
 	// lambda.GitCloneLocal(directory, url)
-	rID2 := 62
-	dateRange2 := lambda.GetLastNDayDateRange(300)
-	lambda.LoadLocalRepo(rID2, directory, "", dateRange2)
+	// rID2 := 62
+	// dateRange2 := lambda.GetLastNDayDateRange(300)
+	// lambda.LoadLocalRepo(rID2, directory, "", dateRange2)
+	lambda.UpdateCommitDataAllRepos()
 }
