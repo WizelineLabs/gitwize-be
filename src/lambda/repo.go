@@ -19,6 +19,7 @@ func GetRepo(repoName, repoURL, token string) *git.Repository {
 	os.RemoveAll(repoPath)
 	r, err := git.PlainClone(repoPath, false, &git.CloneOptions{
 		Auth: &http.BasicAuth{
+			Username: "nonempty", // it need a non empty value here for private repo, look like gogit bug
 			Password: token,
 		},
 		URL:               repoURL,
