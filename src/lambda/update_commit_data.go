@@ -46,7 +46,8 @@ func UpdateDataForRepo(repoID int, repoURL, repoName, repoPass, branch string, d
 
 	var r *git.Repository
 	var accessToken string
-	if mp := os.Getenv("USE_DEFAULT_API_TOKEN"); mp != "" {
+	check := os.Getenv("USE_DEFAULT_API_TOKEN")
+	if check != "" || repoPass == "" {
 		accessToken = os.Getenv("DEFAULT_GITHUB_TOKEN")
 	} else {
 		accessToken = cypher.DecryptString(repoPass, configuration.CurConfiguration.Cypher.PassPhase)
