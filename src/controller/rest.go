@@ -238,7 +238,6 @@ func Initialize() *gin.Engine {
 	db.Initialize()
 
 	ginCont := gin.Default()
-	ginCont.Use(corsHandler())
 
 	admin := ginCont.Group(gwEndPointAdmin)
 	{
@@ -247,6 +246,7 @@ func Initialize() *gin.Engine {
 
 	repoApi := ginCont.Group(gwEndPointRepository)
 	{
+                repoApi.Use(corsHandler())
 		repoApi.Use(AuthMiddleware)
 		repoApi.GET(gwRepoPost, getListRepos)
 		repoApi.GET(gwRepoGetPutDel, getRepos)
