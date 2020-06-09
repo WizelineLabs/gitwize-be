@@ -57,10 +57,50 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COLLATE=utf8_general_ci;
 
+CREATE TABLE `commit_data` (
+  `repository_id` int(11) NOT NULL,
+  `hash` varchar(70) NOT NULL,
+  `author_email` varchar(100) NOT NULL,
+  `message` varchar(250) DEFAULT NULL,
+  `num_files` int(11) DEFAULT NULL,
+  `addition_loc` int(11) DEFAULT NULL,
+  `deletion_loc` int(11) DEFAULT NULL,
+  `num_parents` int(11) DEFAULT NULL,
+  `total_loc` int(11) NOT NULL,
+  `year` year(4) NOT NULL,
+  `month` tinyint(1) NOT NULL,
+  `day` tinyint(1) NOT NULL,
+  `hour` tinyint(1) NOT NULL,
+  `commit_time_stamp` timestamp NOT NULL,
+  PRIMARY KEY (`repository_id`,`hash`),
+  CONSTRAINT `commit_data` FOREIGN KEY (`repository_id`) REFERENCES `repository` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8
+COLLATE=utf8_general_ci;
+
+
+CREATE TABLE `file_stat_data` (
+  `repository_id` int(11) NOT NULL,
+  `hash` varchar(70) NOT NULL,
+  `file_name` varchar(200) NOT NULL,
+  `addition_loc` int(11) DEFAULT NULL,
+  `deletion_loc` int(11) DEFAULT NULL,
+  `year` year(4) NOT NULL,
+  `month` tinyint(1) NOT NULL,
+  `day` tinyint(1) NOT NULL,
+  `hour` tinyint(1) NOT NULL,
+  `commit_time_stamp` timestamp NOT NULL,
+  PRIMARY KEY (`repository_id`,`hash`),
+  CONSTRAINT `file_stat` FOREIGN KEY (`repository_id`) REFERENCES `repository` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8
+COLLATE=utf8_general_ci;
+
+
 INSERT INTO repository(name,status,url,username,password,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by)
-    VALUES ("gitwize","ONGOING","https://github.com/wizeline/gitwize-be.git","tester1","NQR0ULDjGC7YGrQHjwY2yODIdUZj+6/K1Ed3vmseInxts0vxEg==",now(),"tester1",now(),"tester1");
-INSERT INTO repository(name,status,url,username,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by)
-    VALUES ("gitwize2","ONGOING","https://github.com/gitwize2","tester2",now(),"tester2",now(),"tester2");
+    VALUES ("go-git","ONGOING","https://github.com/go-git/go-git.git","tester1","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=",now(),"tester1",now(),"tester1");
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,100);
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,110);
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,120);
