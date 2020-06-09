@@ -58,7 +58,9 @@ func UpdateMetricTable() {
 
 	requests := strings.Split(string(file), ";\n")
 
+	log.Println("=====UpdateMetricTable=====")
 	for _, request := range requests {
+		log.Println(request)
 		err := gormDB.Exec(request).Error
 		if err != nil {
 			log.Fatal("Failed to update database: " + err.Error())
