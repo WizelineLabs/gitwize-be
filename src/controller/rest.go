@@ -238,6 +238,8 @@ func Initialize() *gin.Engine {
 	db.Initialize()
 
 	ginCont := gin.Default()
+	ginCont.Use(corsHandler())
+
 	admin := ginCont.Group(gwEndPointAdmin)
 	{
 		admin.POST(gwAdminOp, posAdminOperation)
@@ -253,7 +255,6 @@ func Initialize() *gin.Engine {
 		repoApi.DELETE(gwRepoGetPutDel, delRepos)
 		repoApi.GET(gwRepoStats, getStats)
 	}
-	ginCont.Use(corsHandler())
 
 	return ginCont
 }
