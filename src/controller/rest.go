@@ -90,12 +90,18 @@ func postRepos(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	password := strings.TrimSpace(reqInfo.Password)
+	if password != "" { // if password empty, dont ecrypt to use default token later
+		password = cypher.EncryptString(password, configuration.CurConfiguration.Cypher.PassPhase)
+	}
+
 	createdRepos := db.Repository{
 		Name:                 reqInfo.Name,
 		Url:                  reqInfo.Url,
 		Status:               reqInfo.Status,
 		UserName:             reqInfo.User,
-		Password:             cypher.EncryptString(reqInfo.Password, configuration.CurConfiguration.Cypher.PassPhase),
+		Password:             password,
 		CtlCreatedBy:         reqInfo.User,
 		CtlCreatedDate:       time.Now(),
 		CtlModifiedBy:        reqInfo.User,
