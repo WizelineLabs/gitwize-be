@@ -32,7 +32,6 @@ INSERT INTO metric(repository_id, branch, type, year, month, day, hour, value)
 SELECT repository_id, 'master' as branch, 5 as type, created_year as year,
 	created_month as month, created_day as day, created_hour as hour, COUNT(*) as value
 FROM gitwize.pull_request
-WHERE state = 'open'
 GROUP BY repository_id, created_year, created_month, created_day, created_hour
 ;
 
