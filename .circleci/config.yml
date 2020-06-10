@@ -56,10 +56,12 @@ jobs:
       - run:
           name: Deploying to Elastic Beanstalk
           command: |
-            eb use dev-gitwize
+            export EB_ENV=dev-gitwize
+            if [ "${CIRCLE_BRANCH}" == "deploy-qa" ]; then
+              export EB_ENV=qa-gitwize 
+            fi 
+            eb use ${EB_ENV} 
             eb deploy
-
-
       - slack/status:
           fail_only: false
           webhook: '${SLACK_WEBHOOK}'
