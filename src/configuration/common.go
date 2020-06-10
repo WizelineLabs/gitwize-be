@@ -3,6 +3,7 @@ package configuration
 const (
 	gwDeployEnv              = "GW_DEPLOY_ENV"
 	gwDbPasswordDev          = "GW_DATABASE_SECRET_DEV"
+	gwDbPasswordQA           = "GW_DATABASE_SECRET_QA"
 	gwDbPasswordLocal        = "GW_DATABASE_SECRET_LOCAL"
 	devEnvironment           = "DEV"
 	qaEnvironment            = "QA"
