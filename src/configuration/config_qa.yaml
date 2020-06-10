@@ -1,0 +1,14 @@
+server:
+  port: 8080
+
+database:
+  gwDbName: gitwize
+  gwDbUser: admin
+  gwDbHost: qa-gitwize-db.cboppvu0mv3y.ap-southeast-1.rds.amazonaws.com
+  gwDbPort: 3306
+
+auth:
+  authDisable: 'false'
+
+endpoint:
+  frontEnd: 'https://dhyfejyfzd6nb.cloudfront.net'
