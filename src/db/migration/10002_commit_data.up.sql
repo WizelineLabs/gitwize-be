@@ -14,7 +14,6 @@ CREATE TABLE `commit_data` (
   `hour` tinyint(1) NOT NULL,
   `commit_time_stamp` timestamp NOT NULL,
   PRIMARY KEY (`repository_id`,`hash`),
-  CONSTRAINT `commit_data` FOREIGN KEY (`repository_id`) REFERENCES `repository` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
@@ -24,6 +23,7 @@ COLLATE=utf8_general_ci;
 CREATE TABLE `file_stat_data` (
   `repository_id` int(11) NOT NULL,
   `hash` varchar(70) NOT NULL,
+  `author_email` varchar(100) NOT NULL,
   `file_name` varchar(200) NOT NULL,
   `addition_loc` int(11) DEFAULT NULL,
   `deletion_loc` int(11) DEFAULT NULL,
@@ -33,7 +33,6 @@ CREATE TABLE `file_stat_data` (
   `hour` tinyint(1) NOT NULL,
   `commit_time_stamp` timestamp NOT NULL,
   PRIMARY KEY (`repository_id`,`hash`),
-  CONSTRAINT `file_stat` FOREIGN KEY (`repository_id`) REFERENCES `repository` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
