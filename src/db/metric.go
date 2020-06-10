@@ -1,10 +1,7 @@
 package db
 
 import (
-	"io/ioutil"
-	"log"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -47,23 +44,4 @@ func GetMetricBaseOnType(idRepository string, metricTypeVal MetricsType, epochFr
 		result[metricTypeName] = metricDTOs
 	}
 	return result, nil
-}
-
-func UpdateMetricTable() {
-	file, err := ioutil.ReadFile("src/db/update_metric_table.sql")
-
-	if err != nil {
-		log.Fatal("Failed to read sql script: " + err.Error())
-	}
-
-	requests := strings.Split(string(file), ";\n")
-
-	log.Println("=====UpdateMetricTable=====")
-	for _, request := range requests {
-		log.Println(request)
-		err := gormDB.Exec(request).Error
-		if err != nil {
-			log.Fatal("Failed to update database: " + err.Error())
-		}
-	}
 }

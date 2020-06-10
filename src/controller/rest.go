@@ -7,7 +7,6 @@ import (
 	"gitwize-be/src/configuration"
 	"gitwize-be/src/cypher"
 	"gitwize-be/src/db"
-	"gitwize-be/src/lambda"
 	"net/http"
 	"os"
 	"strconv"
@@ -34,11 +33,6 @@ func posAdminOperation(c *gin.Context) {
 		return
 	}
 	switch AdminOperation(opId) {
-	case UPDATE_METRIC_TABLE:
-		lambda.CollectPRs()
-		lambda.UpdateCommitDataAllRepos()
-		db.UpdateMetricTable()
-		c.JSON(http.StatusOK, gin.H{"message": "Updating metric table success"})
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad Admin Operation"})
 	}
