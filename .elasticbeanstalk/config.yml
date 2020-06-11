@@ -1,7 +1,13 @@
 branch-defaults:
+  deploy-allow-all-cors:
+    environment: dev-gitwize
   deploy-beanstalk:
     environment: dev-gitwize
     group_suffix: null
+  deploy-qa:
+    environment: qa-gitwize
+  feature/adding-ci-build:
+    environment: dev-gitwize
 global:
   application_name: gitwize
   branch: null
