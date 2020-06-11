@@ -32,7 +32,7 @@ CREATE TABLE file_stat_data (
   day tinyint(1) NOT NULL,
   hour tinyint(1) NOT NULL,
   commit_time_stamp timestamp NOT NULL,
-  PRIMARY KEY (repository_id,hash)
+  PRIMARY KEY (repository_id,hash,file_name)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
