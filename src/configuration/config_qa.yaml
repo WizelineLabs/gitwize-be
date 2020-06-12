@@ -11,4 +11,4 @@ auth:
   authDisable: 'false'
 
 endpoint:
-  frontEnd: 'https://dhyfejyfzd6nb.cloudfront.net'
+  frontEnd: 'https://qa.gitwize.net'
