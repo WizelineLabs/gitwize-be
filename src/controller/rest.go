@@ -65,7 +65,7 @@ func getListRepos(c *gin.Context) {
 		return
 	}
 
-	var repoInfos []RepoInfoGet
+	repoInfos := make([]RepoInfoGet, 0)
 	for _, repo := range repos {
 		repoInfos = append(repoInfos, RepoInfoGet{
 			ID:          repo.ID,
@@ -158,6 +158,7 @@ func delRepos(c *gin.Context) {
 
 	if repo.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + id + " doesn't exist"})
+		return
 	} else {
 		if err := db.DeleteRepository(&repo); err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
@@ -213,10 +214,10 @@ func getStats(c *gin.Context) {
 }
 
 // AuthMiddleware checks for valid access token
-func AuthMiddleware(c *gin.Context) {
+func authMiddleware(c *gin.Context) {
 	authDisabled := configuration.CurConfiguration.Auth.AuthDisable == "true"
 	if !authDisabled && !auth.IsAuthorized(nil, c.Request) {
-		c.AbortWithStatusJSON(401, gin.H{
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message.key": "system.unauthorized",
 			"message":     "Unauthorized!",
 		})
@@ -247,7 +248,7 @@ func Initialize() *gin.Engine {
 
 	repoApi := ginCont.Group(gwEndPointRepository)
 	{
-		repoApi.Use(AuthMiddleware)
+		repoApi.Use(authMiddleware)
 		repoApi.GET(gwRepoPost, getListRepos)
 		repoApi.GET(gwRepoGetPutDel, getRepos)
 		repoApi.POST(gwRepoPost, postRepos)
