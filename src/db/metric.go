@@ -23,16 +23,14 @@ func GetMetricBaseOnType(idRepository string, metricTypeVal MetricsType, epochFr
 	to := ((yearTo*100+monthTo)*100+dayTo)*100 + hourTo
 
 	for metricTypeInt, metricTypeName := range metricTypes {
-		var metrics []Metric
-		err := gormDB.Where("repository_id = ? AND type = ? AND hour >= ? AND hour <= ?",
+		metrics := make([]Metric, 0)
+		if err := gormDB.Where("repository_id = ? AND type = ? AND hour >= ? AND hour <= ?",
 			idRepository, metricTypeInt, from, to).Select("repository_id, " +
 			"branch, type, sum(value) as value, year, month, day").Group("repository_id, branch, type, " +
-			"year, month, day").Find(&metrics).Error
-
-		if err != nil {
+			"year, month, day").Find(&metrics).Error; err != nil {
 			return nil, err
 		}
-		var metricDTOs []MetricDTO
+		metricDTOs := make([]MetricDTO, 0)
 		for _, metric := range metrics {
 			metricDTOs = append(metricDTOs, MetricDTO{
 				BranchName: metric.BranchName,

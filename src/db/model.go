@@ -44,7 +44,7 @@ const (
 )
 
 type Repository struct {
-	ID                   uint      `gorm:"column:id;primary_key" json:"id"`
+	ID                   int       `gorm:"column:id;primary_key" json:"id"`
 	Name                 string    `gorm:"column:name" json:"name"`
 	Url                  string    `gorm:"column:url" json:"url"`
 	Status               string    `gorm:"column:status" json:"status"`
@@ -63,7 +63,7 @@ func (Repository) TableName() string {
 }
 
 type RepositoryDTO struct {
-	ID      uint                   `json:"id"`
+	ID      int                    `json:"id"`
 	Name    string                 `json:"name"`
 	Url     string                 `json:"url"`
 	Status  string                 `json:"status"`
@@ -71,7 +71,7 @@ type RepositoryDTO struct {
 }
 
 type Metric struct {
-	ID               uint        `gorm:"column:id;primary_key" json:"id"`
+	ID               int         `gorm:"column:id;primary_key" json:"id"`
 	RepositoryID     int         `gorm:"column:repository_id" json:"repository_id"`
 	BranchName       string      `gorm:"column:branch;index:branch" json:"branch"`
 	Type             MetricsType `gorm:"column:type" json:"type"`

@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+var notAbleToParseUrl string = "Not be able to parse repository url"
+
 type githubSvc struct {
 	GithubClient *github.Client
 }
@@ -45,7 +47,7 @@ func parseGithubUrl(repoUrl string) (string, string, error) {
 		owner = s[len(s)-2]
 		repo = s[len(s)-1]
 	} else {
-		err := errors.New("Not be able to parse repository url")
+		err := errors.New(notAbleToParseUrl)
 		return "", "", err
 	}
 	return owner, repo, nil
