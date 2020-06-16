@@ -59,10 +59,10 @@ func ReadConfiguration() {
 		viper.SetConfigName(configDev)
 		gwDbPasswordEnv = gwDbPasswordDev
 		cypherPassPhaseEnv = cypherPassPhaseDev
-        case qaEnvironment:
-                viper.SetConfigName(configQA)
-                gwDbPasswordEnv = gwDbPasswordQA
-                cypherPassPhaseEnv = cypherPassPhaseQA
+	case qaEnvironment:
+		viper.SetConfigName(configQA)
+		gwDbPasswordEnv = gwDbPasswordQA
+		cypherPassPhaseEnv = cypherPassPhaseQA
 	default:
 		viper.SetConfigName(configLocal)
 		gwDbPasswordEnv = gwDbPasswordLocal

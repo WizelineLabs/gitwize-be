@@ -6,6 +6,7 @@ CREATE TABLE repository (
 	url varchar(256) NOT NULL,
 	username varchar(256) NULL,
 	password varchar(256) NULL,
+	branches varchar(8182) NULL,
 	ctl_created_date TIMESTAMP NOT NULL,
 	ctl_created_by varchar(256) NOT NULL,
 	ctl_modified_date TIMESTAMP NULL,
@@ -97,8 +98,8 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COLLATE=utf8_general_ci;
 
-INSERT INTO repository(name,status,url,username,password,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by)
-    VALUES ("go-git","ONGOING","https://github.com/go-git/go-git.git","tester1","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=",now(),"tester1",now(),"tester1");
+INSERT INTO repository(name,status,url,username,password,branches,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by)
+    VALUES ("go-git","ONGOING","https://github.com/go-git/go-git.git","tester1","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","",now(),"tester1",now(),"tester1");
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,100);
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,110);
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,120);

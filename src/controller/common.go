@@ -30,5 +30,6 @@ type RepoInfoGet struct {
 	Name        string    `json:"name" binding:"required"`
 	Url         string    `json:"url"  binding:"required"`
 	Status      string    `json:"status"  binding:"required"`
+	Branches    []string  `json:"branches" binding:"required"`
 	LastUpdated time.Time `json:"last_updated" binding:"required"`
 }
