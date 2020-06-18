@@ -17,10 +17,10 @@ commands:
           export EB_ENV=dev-gitwize
           export PATTERN="v[0-9]+(\.[0-9]+).*"
           if [[ ${CIRCLE_TAG} =~  ${PATTERN} ]]; then
-            export EB_ENV=qa-gitwize 
+            export EB_ENV=qa-gitwize
             echo "deploy to QA"
-          fi 
-          eb use ${EB_ENV} 
+          fi
+          eb use ${EB_ENV}
           eb deploy
 
 jobs:
@@ -36,6 +36,10 @@ jobs:
           - MYSQL_USER=gitwize_user
           - MYSQL_DATABASE=gitwize
           - MYSQL_PASSWORD=P@ssword123
+        command: |
+          --character-set-server="utf8"
+          --collation-server="utf8_general_ci"
+          --sql_mode=""
     working_directory: /go/src/gitwize-be
     steps:
       - checkout
@@ -103,4 +107,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^v[0-9]+(\.[0-9]+).*/                
+              only: /^v[0-9]+(\.[0-9]+).*/
