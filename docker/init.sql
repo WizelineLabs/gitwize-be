@@ -71,7 +71,7 @@ CREATE TABLE commit_data (
   month tinyint(1) NOT NULL,
   day tinyint(1) NOT NULL,
   hour tinyint(1) NOT NULL,
-  commit_time_stamp timestamp NOT NULL,
+  commit_time_stamp timestamp NULL,
   PRIMARY KEY (repository_id,hash)
 )
 ENGINE=InnoDB
@@ -82,6 +82,7 @@ COLLATE=utf8_general_ci;
 CREATE TABLE file_stat_data (
   repository_id int(11) NOT NULL,
   hash varchar(70) NOT NULL,
+  author_email varchar(100) NOT NULL,
   file_name varchar(200) NOT NULL,
   addition_loc int(11) DEFAULT NULL,
   deletion_loc int(11) DEFAULT NULL,
@@ -89,13 +90,12 @@ CREATE TABLE file_stat_data (
   month tinyint(1) NOT NULL,
   day tinyint(1) NOT NULL,
   hour tinyint(1) NOT NULL,
-  commit_time_stamp timestamp NOT NULL,
-  PRIMARY KEY (repository_id,hash)
+  commit_time_stamp timestamp NULL,
+  PRIMARY KEY (repository_id,hash,file_name)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COLLATE=utf8_general_ci;
-
 
 INSERT INTO repository(name,status,url,username,password,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by)
     VALUES ("go-git","ONGOING","https://github.com/go-git/go-git.git","tester1","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=",now(),"tester1",now(),"tester1");
