@@ -62,7 +62,7 @@ jobs:
           name: Unit test
           command: go test -count=1 ./...
       - run:
-          name: Code coverge
+          name: Code coverage
           command: |
             go test -coverprofile=coverage.out ./...
             go tool cover -html=coverage.out -o coverage.html
