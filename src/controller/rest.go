@@ -7,6 +7,8 @@ import (
 	"gitwize-be/src/configuration"
 	"gitwize-be/src/cypher"
 	"gitwize-be/src/db"
+	"gitwize-be/src/githubapi"
+	"gitwize-be/src/utils"
 	"net/http"
 	"os"
 	"strconv"
@@ -15,6 +17,7 @@ import (
 )
 
 func posAdminOperation(c *gin.Context) {
+	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 	opId, err := strconv.Atoi(c.Param("op_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -38,6 +41,7 @@ func posAdminOperation(c *gin.Context) {
 	}
 }
 func getRepos(c *gin.Context) {
+	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 	id := c.Param("id")
 	var repo db.Repository
 	if err := db.FindRepository(&repo, id); err != nil {
@@ -53,12 +57,14 @@ func getRepos(c *gin.Context) {
 			Name:        repo.Name,
 			Url:         repo.Url,
 			Status:      repo.Status,
+			Branches:    strings.Split(repo.Branches, ","),
 			LastUpdated: repo.CtlModifiedDate,
 		})
 	}
 }
 
 func getListRepos(c *gin.Context) {
+	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 	var repos []db.Repository
 	if err := db.GetListRepository(&repos); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
@@ -72,6 +78,7 @@ func getListRepos(c *gin.Context) {
 			Name:        repo.Name,
 			Url:         repo.Url,
 			Status:      repo.Status,
+			Branches:    strings.Split(repo.Branches, ","),
 			LastUpdated: repo.CtlModifiedDate,
 		})
 	}
@@ -79,8 +86,17 @@ func getListRepos(c *gin.Context) {
 }
 
 func postRepos(c *gin.Context) {
+	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 	var reqInfo RepoInfoPost
-	if err := c.BindJSON(&reqInfo); err != nil {
+	var err error
+	var branches []string
+
+	if err = c.BindJSON(&reqInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if branches, err = githubapi.GetListBranches(reqInfo.Url, reqInfo.Password); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -96,11 +112,12 @@ func postRepos(c *gin.Context) {
 		Status:               reqInfo.Status,
 		UserName:             reqInfo.User,
 		Password:             password,
+		Branches:             strings.Join(branches, ","),
 		CtlCreatedBy:         reqInfo.User,
 		CtlCreatedDate:       time.Now(),
 		CtlModifiedBy:        reqInfo.User,
 		CtlModifiedDate:      time.Now(),
-		CtlLastMetricUpdated: time.Now(),
+		CtlLastMetricUpdated: time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 	if err := db.CreateRepository(&createdRepos); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
@@ -112,6 +129,7 @@ func postRepos(c *gin.Context) {
 		Name:        createdRepos.Name,
 		Url:         createdRepos.Url,
 		Status:      createdRepos.Status,
+		Branches:    branches,
 		LastUpdated: createdRepos.CtlModifiedDate,
 	}
 
@@ -119,6 +137,7 @@ func postRepos(c *gin.Context) {
 }
 
 func putRepos(c *gin.Context) {
+	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 	var reqInfo RepoInfoPost
 	if err := c.BindJSON(&reqInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -136,9 +155,9 @@ func putRepos(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + id + " doesn't exist"})
 	} else {
 		repo.Name = reqInfo.Name
-		repo.UserName = reqInfo.User
 		repo.Url = reqInfo.Url
 		repo.Status = reqInfo.Status
+		repo.Branches = strings.Join(reqInfo.Branches, ",")
 		repo.CtlModifiedBy = reqInfo.User
 		repo.CtlModifiedDate = time.Now()
 		if err := db.UpdateRepository(&repo); err != nil {
@@ -149,6 +168,7 @@ func putRepos(c *gin.Context) {
 }
 
 func delRepos(c *gin.Context) {
+	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 	id := c.Param("id")
 	var repo db.Repository
 	if err := db.FindRepository(&repo, id); err != nil {
@@ -168,6 +188,7 @@ func delRepos(c *gin.Context) {
 }
 
 func getStats(c *gin.Context) {
+	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 	idRepository := c.Param("id")
 	metricTypeName := c.DefaultQuery("metric_type", "ALL")
 	metricTypeVal, ok := db.MapNameToTypeMetric[metricTypeName]
@@ -249,9 +270,9 @@ func Initialize() *gin.Engine {
 	repoApi := ginCont.Group(gwEndPointRepository)
 	{
 		repoApi.Use(authMiddleware)
-		repoApi.GET(gwRepoPost, getListRepos)
+		repoApi.GET("", getListRepos)
 		repoApi.GET(gwRepoGetPutDel, getRepos)
-		repoApi.POST(gwRepoPost, postRepos)
+		repoApi.POST("", postRepos)
 		repoApi.PUT(gwRepoGetPutDel, putRepos)
 		repoApi.DELETE(gwRepoGetPutDel, delRepos)
 		repoApi.GET(gwRepoStats, getStats)

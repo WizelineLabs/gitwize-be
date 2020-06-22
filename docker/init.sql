@@ -6,6 +6,7 @@ CREATE TABLE repository (
 	url varchar(256) NOT NULL,
 	username varchar(256) NULL,
 	password varchar(256) NULL,
+	branches varchar(8182) NULL,
 	ctl_created_date TIMESTAMP NOT NULL,
 	ctl_created_by varchar(256) NOT NULL,
 	ctl_modified_date TIMESTAMP NULL,
@@ -27,8 +28,7 @@ CREATE TABLE metric (
 	day INT NOT NULL,
 	hour INT NOT NULL,
 	value BIGINT NOT NULL,
-	PRIMARY KEY (id),
-    FOREIGN KEY (repository_id) REFERENCES repository(id)
+	PRIMARY KEY (id)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
@@ -71,7 +71,7 @@ CREATE TABLE commit_data (
   month tinyint(1) NOT NULL,
   day tinyint(1) NOT NULL,
   hour tinyint(1) NOT NULL,
-  commit_time_stamp timestamp NOT NULL,
+  commit_time_stamp timestamp NULL,
   PRIMARY KEY (repository_id,hash)
 )
 ENGINE=InnoDB
@@ -82,6 +82,7 @@ COLLATE=utf8_general_ci;
 CREATE TABLE file_stat_data (
   repository_id int(11) NOT NULL,
   hash varchar(70) NOT NULL,
+  author_email varchar(100) NOT NULL,
   file_name varchar(200) NOT NULL,
   addition_loc int(11) DEFAULT NULL,
   deletion_loc int(11) DEFAULT NULL,
@@ -89,16 +90,15 @@ CREATE TABLE file_stat_data (
   month tinyint(1) NOT NULL,
   day tinyint(1) NOT NULL,
   hour tinyint(1) NOT NULL,
-  commit_time_stamp timestamp NOT NULL,
-  PRIMARY KEY (repository_id,hash)
+  commit_time_stamp timestamp NULL,
+  PRIMARY KEY (repository_id,hash,file_name)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COLLATE=utf8_general_ci;
 
-
-INSERT INTO repository(name,status,url,username,password,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by)
-    VALUES ("go-git","ONGOING","https://github.com/go-git/go-git.git","tester1","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=",now(),"tester1",now(),"tester1");
+INSERT INTO repository(name,status,url,username,password,branches,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by,ctl_last_metric_updated)
+    VALUES ("go-git","ONGOING","https://github.com/go-git/go-git.git","tester1","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","",now(),"tester1",now(),"tester1","1970-01-01 00:00:00");
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,100);
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,110);
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,120);
