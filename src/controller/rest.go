@@ -52,12 +52,16 @@ func getRepos(c *gin.Context) {
 	if repo.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + id + " doesn't exist"})
 	} else {
+		branches := make([]string, 0)
+		if len(repo.Branches) > 0 {
+			branches = strings.Split(repo.Branches, ",")
+		}
 		c.JSON(http.StatusOK, RepoInfoGet{
 			ID:          repo.ID,
 			Name:        repo.Name,
 			Url:         repo.Url,
 			Status:      repo.Status,
-			Branches:    strings.Split(repo.Branches, ","),
+			Branches:    branches,
 			LastUpdated: repo.CtlModifiedDate,
 		})
 	}
@@ -73,12 +77,16 @@ func getListRepos(c *gin.Context) {
 
 	repoInfos := make([]RepoInfoGet, 0)
 	for _, repo := range repos {
+		branches := make([]string, 0)
+		if len(repo.Branches) > 0 {
+			branches = strings.Split(repo.Branches, ",")
+		}
 		repoInfos = append(repoInfos, RepoInfoGet{
 			ID:          repo.ID,
 			Name:        repo.Name,
 			Url:         repo.Url,
 			Status:      repo.Status,
-			Branches:    strings.Split(repo.Branches, ","),
+			Branches:    branches,
 			LastUpdated: repo.CtlModifiedDate,
 		})
 	}
