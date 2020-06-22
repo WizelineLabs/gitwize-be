@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"github.com/google/go-github/v32/github"
+	"gitwize-be/src/utils"
 	"golang.org/x/oauth2"
+	"log"
 	"os"
 	"strings"
 )
@@ -50,5 +52,7 @@ func parseGithubUrl(repoUrl string) (string, string, error) {
 		err := errors.New(notAbleToParseUrl)
 		return "", "", err
 	}
+	repo = strings.Replace(repo, ".git", "", -1)
+	log.Println(utils.GetFuncName(), ": owner=", owner, ", repo=", repo)
 	return owner, repo, nil
 }
