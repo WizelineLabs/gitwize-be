@@ -62,20 +62,14 @@ jobs:
           command: |
            sudo bash -c "apt-get update && apt-get install -y default-mysql-client"
            mysql -h 127.0.0.1 -P 3306 --protocol=tcp -u ${MYSQL_USER} -p${MYSQL_PASSWORD} <./docker/init.sql
-      - run:
-          name: Unit test
-          command: go test -count=1 ./...
-      - run:
-          name: Code coverage
-          command: |
-            go test -coverprofile=coverage.out ./...
-            go tool cover -html=coverage.out -o coverage.html
+      - run: sudo apt install bc
+      - run: ./scripts/test_coverage.sh
       - run:
           name: "RunSonarqube scanner"
           command: |
             export SCAN_VERSION=4.3.0.2102-linux
-            wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SCAN_VERSION}.zip 
-            unzip sonar-scanner-cli-${SCAN_VERSION}.zip 
+            wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SCAN_VERSION}.zip
+            unzip sonar-scanner-cli-${SCAN_VERSION}.zip
             ./sonar-scanner-${SCAN_VERSION}/bin/sonar-scanner \
              -Dsonar.projectKey=gitwize-be \
              -Dsonar.sources=. \
