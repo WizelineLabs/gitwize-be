@@ -65,6 +65,23 @@ jobs:
       - run:
           name: Unit test
           command: go test -count=1 ./...
+      - run:
+          name: Code coverage
+          command: |
+            go test -coverprofile=coverage.out ./...
+            go tool cover -html=coverage.out -o coverage.html
+      - run:
+          name: "RunSonarqube scanner"
+          command: |
+            export SCAN_VERSION=4.3.0.2102-linux
+            wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SCAN_VERSION}.zip 
+            unzip sonar-scanner-cli-${SCAN_VERSION}.zip 
+            ./sonar-scanner-${SCAN_VERSION}/bin/sonar-scanner \
+             -Dsonar.projectKey=gitwize-be \
+             -Dsonar.sources=. \
+             -Dsonar.host.url=https://sunfyre.wizeline.com \
+             -Dsonar.go.coverage.reportPaths=coverage.out \
+             -Dsonar.login=${SONARQUBE_TOKEN}
       - slack/status:
           fail_only: false
           webhook: '${SLACK_WEBHOOK}'
