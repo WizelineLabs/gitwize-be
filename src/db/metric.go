@@ -24,11 +24,19 @@ func GetMetricBaseOnType(idRepository string, metricTypeVal MetricsType, epochFr
 
 	for metricTypeInt, metricTypeName := range metricTypes {
 		metrics := make([]Metric, 0)
-		if err := gormDB.Where("repository_id = ? AND type = ? AND hour >= ? AND hour <= ?",
-			idRepository, metricTypeInt, from, to).Select("repository_id, " +
-			"branch, type, sum(value) as value, year, month, day").Group("repository_id, branch, type, " +
-			"year, month, day").Find(&metrics).Error; err != nil {
-			return nil, err
+		if metricTypeInt == PRS_OPENED {
+			if err := gormDB.Where("repository_id = ? AND type = ? AND hour >= ? AND hour <= ? AND (hour%100=23 OR hour=?)",
+				idRepository, metricTypeInt, from, to, to).Select("repository_id, " +
+				"branch, type, value, year, month, day").Find(&metrics).Error; err != nil {
+				return nil, err
+			}
+		} else {
+			if err := gormDB.Where("repository_id = ? AND type = ? AND hour >= ? AND hour <= ?",
+				idRepository, metricTypeInt, from, to).Select("repository_id, " +
+				"branch, type, sum(value) as value, year, month, day").Group("repository_id, branch, type, " +
+				"year, month, day").Find(&metrics).Error; err != nil {
+				return nil, err
+			}
 		}
 		metricDTOs := make([]MetricDTO, 0)
 		for _, metric := range metrics {
@@ -42,4 +50,11 @@ func GetMetricBaseOnType(idRepository string, metricTypeVal MetricsType, epochFr
 		result[metricTypeName] = metricDTOs
 	}
 	return result, nil
+}
+
+func DeleteMetricsInOneRepo(idRepository int) error {
+	if err := gormDB.Where("repository_id = ?", idRepository).Delete(Metric{}).Error; err != nil {
+		return err
+	}
+	return nil
 }
