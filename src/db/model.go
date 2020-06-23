@@ -15,6 +15,7 @@ const (
 	PRS_CREATED
 	PRS_MERGED
 	PRS_REJECTED
+	PRS_OPENED
 )
 
 var MapNameToTypeMetric = map[string]MetricsType{
@@ -26,6 +27,7 @@ var MapNameToTypeMetric = map[string]MetricsType{
 	"prs_created":   PRS_CREATED,
 	"prs_merged":    PRS_MERGED,
 	"prs_rejected":  PRS_REJECTED,
+	"prs_opened":    PRS_OPENED,
 }
 
 var MapTypeMetricToName = map[MetricsType]string{
@@ -36,6 +38,7 @@ var MapTypeMetricToName = map[MetricsType]string{
 	PRS_CREATED:   "prs_created",
 	PRS_MERGED:    "prs_merged",
 	PRS_REJECTED:  "prs_rejected",
+	PRS_OPENED:    "prs_opened",
 }
 
 const (
