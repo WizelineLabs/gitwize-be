@@ -105,8 +105,13 @@ func postRepos(c *gin.Context) {
 	}
 
 	if branches, err = githubapi.GetListBranches(reqInfo.Url, reqInfo.Password); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		if strings.Contains(err.Error(), "Bad credentials") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "401 Bad credentials"})
+		} else if strings.Contains(err.Error(), "Bad credentials") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "404 Not Found"})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
 	}
 
 	password := strings.TrimSpace(reqInfo.Password)
