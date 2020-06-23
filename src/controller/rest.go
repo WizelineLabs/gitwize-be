@@ -112,6 +112,7 @@ func postRepos(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
+		return
 	}
 
 	password := strings.TrimSpace(reqInfo.Password)
