@@ -196,6 +196,12 @@ func delRepos(c *gin.Context) {
 	} else {
 		if err := db.DeleteRepository(&repo); err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+		// cascade delete metric table also
+		if err := db.DeleteMetricsInOneRepo(repo.ID); err != nil {
+			c.JSON(http.StatusInternalServerError, err.Error())
+			return
 		}
 		c.JSON(http.StatusNoContent, nil)
 	}
