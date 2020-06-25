@@ -9,6 +9,7 @@ const (
 	gwRepoGetPutDel      = ":id"
 	gwRepoPost           = gwEndPointRepository
 	gwRepoStats          = ":id/stats"
+	gwContributorStats   = ":id/contributor"
 )
 
 type AdminOperation int
