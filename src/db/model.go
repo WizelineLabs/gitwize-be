@@ -42,8 +42,10 @@ var MapTypeMetricToName = map[MetricsType]string{
 }
 
 const (
-	tableRepository = "repository"
-	tableMetric     = "metric"
+	tableRepository      = "repository"
+	tableMetric          = "metric"
+	tableContributor     = "commit_data"
+	tableContributorFile = "file_stat_data"
 )
 
 type Repository struct {
@@ -95,4 +97,29 @@ type MetricDTO struct {
 
 func (Metric) TableName() string {
 	return tableMetric
+}
+
+type ContributorStats struct {
+	RepositoryID int     `gorm:"column:repository_id" json:"repository_id"`
+	AuthorEmail  string  `gorm:"column:author_email" json:"author_email"`
+	AuthorName   string  `gorm:"column:author_name" json:"author_name"`
+	Commits      int     `gorm:"column:commits" json:"commits"`
+	AdditionLoc  int     `gorm:"column:addition_loc" json:"addition_loc"`
+	DeletionLoc  int     `gorm:"column:deletion_loc" json:"deletion_loc"`
+	NumFiles     int     `gorm:"column:num_files" json:"num_files"`
+	LOCPercent   float32 `gorm:"column:loc_percent" json:"loc_percent"`
+	Date         string  `gorm:"column:ate" json:"date"`
+}
+
+type ContributorName struct {
+	AuthorEmail string `gorm:"column:author_email" json:"author_email"`
+	AuthorName  string `gorm:"column:author_name" json:"author_name"`
+}
+
+func (ContributorStats) TableName() string {
+	return tableContributor
+}
+
+func (ContributorName) TableName() string {
+	return tableContributor
 }

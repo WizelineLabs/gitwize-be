@@ -296,6 +296,7 @@ func Initialize() *gin.Engine {
 		repoApi.PUT(gwRepoGetPutDel, putRepos)
 		repoApi.DELETE(gwRepoGetPutDel, delRepos)
 		repoApi.GET(gwRepoStats, getStats)
+		repoApi.GET(gwContributorStats, getContributorStats)
 	}
 
 	return ginCont
