@@ -15,10 +15,6 @@
 
 `export GW_DATABASE_SECRET_LOCAL=P@ssword123`
 
-`go test ./...`
-
-To run tests without cache:
-
 `go test -count=1 ./...`
 
 # On cloud environment

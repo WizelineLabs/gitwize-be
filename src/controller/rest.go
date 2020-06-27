@@ -8,6 +8,7 @@ import (
 	"gitwize-be/src/cypher"
 	"gitwize-be/src/db"
 	"gitwize-be/src/githubapi"
+	"gitwize-be/src/lambda"
 	"gitwize-be/src/utils"
 	"net/http"
 	"os"
@@ -212,6 +213,15 @@ func postRepos(c *gin.Context) {
 		})
 		return
 	}
+
+	repoPayload := lambda.RepoPayload{
+		RepoID:   createdRepos.ID,
+		RepoName: createdRepos.Name,
+		URL:      createdRepos.Url,
+		RepoPass: password,
+		Branch:   "",
+	}
+	lambda.Trigger(repoPayload, lambda.GetLoadFullRepoLambdaFunc(), "ap-southeast-1")
 
 	repoInfo := RepoInfoGet{
 		ID:          createdRepo.ID,
