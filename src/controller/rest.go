@@ -9,6 +9,7 @@ import (
 	"gitwize-be/src/db"
 	"gitwize-be/src/githubapi"
 	"gitwize-be/src/utils"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -16,6 +17,14 @@ import (
 	"time"
 )
 
+func extractUserInfo(c *gin.Context) string {
+	userId := c.Request.Header.Get("AuthenticatedUser")
+	if userId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User's email does not exist"})
+		return ""
+	}
+	return userId
+}
 func posAdminOperation(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 	opId, err := strconv.Atoi(c.Param("op_id"))
@@ -42,6 +51,13 @@ func posAdminOperation(c *gin.Context) {
 }
 func getRepos(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
+
+	var userId string
+	if userId = extractUserInfo(c); userId == "" {
+		return
+	}
+	log.Println("userId: ", userId)
+
 	id := c.Param("id")
 	var repo db.Repository
 	if err := db.FindRepository(&repo, id); err != nil {
@@ -69,6 +85,13 @@ func getRepos(c *gin.Context) {
 
 func getListRepos(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
+
+	var userId string
+	if userId = extractUserInfo(c); userId == "" {
+		return
+	}
+	log.Println("userId: ", userId)
+
 	var repos []db.Repository
 	if err := db.GetListRepository(&repos); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())

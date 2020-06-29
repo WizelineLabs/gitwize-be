@@ -8,7 +8,7 @@ database:
   gwDbPort: 3306
 
 auth:
-  authDisable: 'true'
+  authDisable: 'false'
 
 endpoint:
   frontEnd: 'http://localhost:8080'
