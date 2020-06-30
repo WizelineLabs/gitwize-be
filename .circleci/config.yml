@@ -20,6 +20,12 @@ commands:
             export EB_ENV=qa-gitwize
             echo "deploy to QA"
           fi
+	  export PROD_PATTERN="prod[0-9]+(\.[0-9]+).*"
+          if [[ ${CIRCLE_TAG} =~  ${PATTERN} ]]; then
+            export EB_ENV=prod-gitwize
+            echo "deploy to PROD"
+          fi
+          
           eb use ${EB_ENV}
           eb deploy
 
@@ -98,6 +104,15 @@ jobs:
       - slack/status:
           fail_only: false
           webhook: '${SLACK_WEBHOOK}'
+  deploy-prod:
+    docker:
+      - image: circleci/node:latest # the primary container, where your job's commands are run
+    steps:
+      - checkout # check out the code in the project directory
+      - deploy_build
+      - slack/status:
+          fail_only: false
+          webhook: '${SLACK_WEBHOOK}'
 orbs:
   slack: circleci/slack@3.4.2
   aws-cli: circleci/aws-cli@1.0.0
@@ -119,3 +134,9 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v[0-9]+(\.[0-9]+).*/
+      - deploy-prod:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^prod[0-9]+(\.[0-9]+).*/

@@ -1,4 +1,6 @@
 branch-defaults:
+  create-prod-environment:
+    environment: prod-gitwize
   deploy-allow-all-cors:
     environment: dev-gitwize
   deploy-beanstalk:
@@ -8,6 +10,8 @@ branch-defaults:
     environment: qa-gitwize
   feature/adding-ci-build:
     environment: dev-gitwize
+  fix-coverage-filename:
+    environment: prod
 global:
   application_name: gitwize
   branch: null
