@@ -21,11 +21,10 @@ commands:
             echo "deploy to QA"
           fi
           export PROD_PATTERN="prod[0-9]+(\.[0-9]+).*"
-          if [[ ${CIRCLE_TAG} =~  ${PATTERN} ]]; then
+          if [[ ${CIRCLE_TAG} =~  ${PROD_PATTERN} ]]; then
             export EB_ENV=prod-gitwize
             echo "deploy to PROD"
           fi
-          
           eb use ${EB_ENV}
           eb deploy
 
