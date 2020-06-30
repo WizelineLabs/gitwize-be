@@ -58,6 +58,8 @@ const (
 	ErrCodeRepoInvalidUrl = http.StatusBadRequest
 	ErrKeyRepoInvalidUrl  = "repository.invalidURL"
 	ErrMsgRepoInvalidUrl  = "Repo URL is invalid."
+
+	ErrKeyUnknownIssue = "Unknown"
 )
 
 type RestErr struct {

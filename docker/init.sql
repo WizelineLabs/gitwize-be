@@ -20,6 +20,7 @@ CREATE TABLE repository (
 	url varchar(256) NOT NULL,
 	access_token varchar(256) NULL,
 	branches varchar(8182) NULL,
+	num_ref int NOT NULL,
 	ctl_created_date TIMESTAMP NOT NULL,
 	ctl_created_by varchar(256) NOT NULL,
 	ctl_modified_date TIMESTAMP NULL,

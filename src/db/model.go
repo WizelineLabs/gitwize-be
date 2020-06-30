@@ -57,6 +57,7 @@ type Repository struct {
 	Status               string    `gorm:"column:status" json:"status"`
 	AccessToken          string    `gorm:"column:access_token" json:"access_token"`
 	Branches             string    `gorm:"column:branches" json:"branches"`
+	NumRef               int       `gorm:"column:num_ref" json:"num_ref"`
 	CtlCreatedDate       time.Time `gorm:"type:timestamp;column:ctl_created_date" json:"ctl_created_date"`
 	CtlCreatedBy         string    `gorm:"column:ctl_created_by" json:"ctl_created_by"`
 	CtlModifiedDate      time.Time `gorm:"type:timestamp;column:ctl_modified_date" json:"ctl_modified_date"`
