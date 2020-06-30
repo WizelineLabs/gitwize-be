@@ -20,7 +20,7 @@ commands:
             export EB_ENV=qa-gitwize
             echo "deploy to QA"
           fi
-	  export PROD_PATTERN="prod[0-9]+(\.[0-9]+).*"
+          export PROD_PATTERN="prod[0-9]+(\.[0-9]+).*"
           if [[ ${CIRCLE_TAG} =~  ${PATTERN} ]]; then
             export EB_ENV=prod-gitwize
             echo "deploy to PROD"
