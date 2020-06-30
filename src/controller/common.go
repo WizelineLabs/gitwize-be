@@ -22,6 +22,15 @@ const (
 )
 
 const (
+	statusDataLoading   = "LOADING"
+	statusDataAvailable = "AVAILABLE"
+)
+
+const (
+	ErrCodeNotAuthenticatedUser = http.StatusBadRequest
+	ErrKeyNotAuthenticatedUser  = "common.NotAuthenticatedUser"
+	ErrMsgNotAuthenticatedUser  = "User's email does not exist."
+
 	ErrCodeUnauthorized = http.StatusUnauthorized
 	ErrKeyUnauthorized  = "common.unauthorized"
 	ErrMsgUnauthorized  = "Unauthorized."
@@ -29,6 +38,10 @@ const (
 	ErrCodeEntityNotFound = http.StatusNotFound
 	ErrKeyEntityNotFound  = "common.entityNotFound"
 	ErrMsgEntityNotFound  = "Entity not found."
+
+	ErrCodeBadJsonFormat = http.StatusBadRequest
+	ErrKeyBadJsonFormat  = "common.badJsonFormat"
+	ErrMsgBadJsonFormat  = "Not able to parse json format."
 
 	ErrCodeRepoExisted = http.StatusConflict
 	ErrKeyRepoExisted  = "repository.existed"
@@ -53,12 +66,10 @@ type RestErr struct {
 }
 
 type RepoInfoPost struct {
-	Name     string   `json:"name"`
-	Url      string   `json:"url"  binding:"required"`
-	Status   string   `json:"status"`
-	Branches []string `json:"branches"`
-	User     string   `json:"username"`
-	Password string   `json:"password"`
+	Name        string   `json:"name"`
+	Url         string   `json:"url"  binding:"required"`
+	Branches    []string `json:"branches"`
+	AccessToken string   `json:"password"`
 }
 
 type RepoInfoGet struct {

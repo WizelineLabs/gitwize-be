@@ -49,11 +49,6 @@ const (
 	tableUser            = "user"
 )
 
-const (
-	statusDataLoading   = "LOADING"
-	statusDataAvailable = "AVAILABLE"
-)
-
 type Repository struct {
 	ID                   int       `gorm:"column:id;primary_key" json:"id"`
 	RepoFullName         string    `gorm:"column:repo_full_name;index:repo_full_name" json:"repo_full_name"`

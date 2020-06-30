@@ -19,9 +19,9 @@ import (
 func extractUserInfo(c *gin.Context) string {
 	userId := c.Request.Header.Get("AuthenticatedUser")
 	if userId == "" {
-		c.JSON(http.StatusBadRequest, RestErr{
-			ErrorKey:     "common.NotAuthenticatedUser",
-			ErrorMessage: "User's email does not exist"})
+		c.JSON(ErrCodeNotAuthenticatedUser, RestErr{
+			ErrorKey:     ErrKeyNotAuthenticatedUser,
+			ErrorMessage: ErrMsgNotAuthenticatedUser})
 		return ""
 	}
 	return userId
@@ -63,7 +63,7 @@ func getRepos(c *gin.Context) {
 
 	if repo.ID == 0 {
 		c.JSON(ErrCodeEntityNotFound, RestErr{
-			ErrorKey:     ErrKeyRepoNotFound,
+			ErrorKey:     ErrKeyEntityNotFound,
 			ErrorMessage: ErrMsgEntityNotFound})
 	} else {
 		branches := make([]string, 0)
@@ -114,37 +114,66 @@ func postRepos(c *gin.Context) {
 	var reqInfo RepoInfoPost
 	var err error
 	var branches []string
+	var owner, repoName string
 
+	userId := extractUserInfo(c)
 	if err = c.BindJSON(&reqInfo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(ErrCodeBadJsonFormat, RestErr{
+			ErrorKey:     ErrKeyBadJsonFormat,
+			ErrorMessage: err.Error(),
+		})
 		return
 	}
 
-	if branches, err = githubapi.GetListBranches(reqInfo.Url, reqInfo.Password); err != nil {
+	if owner, repoName, err = githubapi.ParseGithubUrl(reqInfo.Url); err != nil {
+		c.JSON(ErrCodeRepoInvalidUrl, RestErr{
+			ErrKeyRepoInvalidUrl,
+			ErrMsgRepoInvalidUrl,
+		})
+		return
+	}
+
+	if duplicated, err := db.IsRepoUserExist(userId, owner+"/"+repoName); err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	} else if duplicated {
+		c.JSON(ErrCodeRepoInvalidUrl, RestErr{
+			ErrKeyRepoInvalidUrl,
+			ErrMsgRepoInvalidUrl,
+		})
+		return
+	}
+	if branches, err = githubapi.GetListBranches(owner, repoName, reqInfo.AccessToken); err != nil {
 		if strings.Contains(err.Error(), "Bad credentials") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "401 Bad credentials"})
-		} else if strings.Contains(err.Error(), "Bad credentials") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "404 Not Found"})
+			c.JSON(ErrCodeRepoBadCredential, RestErr{
+				ErrKeyRepoBadCredential,
+				ErrMsgRepoBadCredential,
+			})
+		} else if strings.Contains(err.Error(), "Not Found") {
+			c.JSON(ErrCodeRepoNotFound, RestErr{
+				ErrKeyRepoNotFound,
+				ErrMsgRepoNotFound,
+			})
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 		return
 	}
 
-	password := strings.TrimSpace(reqInfo.Password)
-	if password != "" { // if password empty, dont ecrypt to use default token later
-		password = cypher.EncryptString(password, configuration.CurConfiguration.Cypher.PassPhase)
+	accessToken := strings.TrimSpace(reqInfo.AccessToken)
+	if accessToken != "" { // if password empty, dont ecrypt to use default token later
+		accessToken = cypher.EncryptString(accessToken, configuration.CurConfiguration.Cypher.PassPhase)
 	}
 
 	createdRepos := db.Repository{
 		Name:                 reqInfo.Name,
 		Url:                  reqInfo.Url,
-		Status:               reqInfo.Status,
-		AccessToken:          password,
+		Status:               statusDataLoading,
+		AccessToken:          accessToken,
 		Branches:             strings.Join(branches, ","),
-		CtlCreatedBy:         reqInfo.User,
+		CtlCreatedBy:         userId,
 		CtlCreatedDate:       time.Now(),
-		CtlModifiedBy:        reqInfo.User,
+		CtlModifiedBy:        userId,
 		CtlModifiedDate:      time.Now(),
 		CtlLastMetricUpdated: time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
@@ -188,9 +217,9 @@ func putRepos(c *gin.Context) {
 	} else {
 		repo.Name = reqInfo.Name
 		repo.Url = reqInfo.Url
-		repo.Status = reqInfo.Status
+		//repo.Status = reqInfo.Status
 		repo.Branches = strings.Join(reqInfo.Branches, ",")
-		repo.CtlModifiedBy = reqInfo.User
+		//repo.CtlModifiedBy = reqInfo.User
 		repo.CtlModifiedDate = time.Now()
 		/*
 			if err := db.UpdateRepository(&repo); err != nil {

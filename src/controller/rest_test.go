@@ -41,11 +41,10 @@ func init() {
 func TestPostReposOK(t *testing.T) {
 	configuration.CurConfiguration.Auth.AuthDisable = "true"
 	posRequest := RepoInfoPost{
-		Name:     "Gitwize",
-		Url:      "https://github.com/wizeline/gitwize-be",
-		Status:   "ONGOING",
-		User:     "tester",
-		Password: "",
+		Name: "Gitwize",
+		Url:  "https://github.com/wizeline/gitwize-be",
+		//User:     "tester",
+		//Password: "",
 	}
 	expectedResult := "{\"id\":\\d+," +
 		"\"name\":\"Gitwize\"," +
@@ -67,7 +66,7 @@ func TestPostRepos_BadRequest(t *testing.T) {
 	configuration.CurConfiguration.Auth.AuthDisable = "true"
 	posRequest := RepoInfoPost{
 		Name: "Gitwize",
-		User: "tester",
+		//User: "tester",
 	}
 
 	b, err := json.Marshal(posRequest)
