@@ -1,6 +1,9 @@
 package controller
 
-import "time"
+import (
+	"net/http"
+	"time"
+)
 
 const (
 	gwEndPointAdmin      = "/api/v1/admin/"
@@ -17,6 +20,37 @@ type AdminOperation int
 const (
 	UPDATE_METRIC_TABLE AdminOperation = iota + 1
 )
+
+const (
+	ErrCodeUnauthorized = http.StatusUnauthorized
+	ErrKeyUnauthorized  = "common.unauthorized"
+	ErrMsgUnauthorized  = "Unauthorized."
+
+	ErrCodeEntityNotFound = http.StatusNotFound
+	ErrKeyEntityNotFound  = "common.entityNotFound"
+	ErrMsgEntityNotFound  = "Entity not found."
+
+	ErrCodeRepoExisted = http.StatusConflict
+	ErrKeyRepoExisted  = "repository.existed"
+	ErrMsgRepoExisted  = "Repository existed."
+
+	ErrCodeRepoNotFound = http.StatusNotFound
+	ErrKeyRepoNotFound  = "repository.notFound"
+	ErrMsgRepoNotFound  = "Repository not found."
+
+	ErrCodeRepoBadCredential = http.StatusForbidden
+	ErrKeyRepoBadCredential  = "repository.badCredentials"
+	ErrMsgRepoBadCredential  = "Provided repository credentials is invalid."
+
+	ErrCodeRepoInvalidUrl = http.StatusBadRequest
+	ErrKeyRepoInvalidUrl  = "repository.invalidURL"
+	ErrMsgRepoInvalidUrl  = "Repo URL is invalid."
+)
+
+type RestErr struct {
+	ErrorKey     string `json:"errorKey"`
+	ErrorMessage string `json:"errorMessage"`
+}
 
 type RepoInfoPost struct {
 	Name     string   `json:"name"`

@@ -46,15 +46,21 @@ const (
 	tableMetric          = "metric"
 	tableContributor     = "commit_data"
 	tableContributorFile = "file_stat_data"
+	tableUser            = "user"
+)
+
+const (
+	statusDataLoading   = "LOADING"
+	statusDataAvailable = "AVAILABLE"
 )
 
 type Repository struct {
 	ID                   int       `gorm:"column:id;primary_key" json:"id"`
+	RepoFullName         string    `gorm:"column:repo_full_name;index:repo_full_name" json:"repo_full_name"`
 	Name                 string    `gorm:"column:name" json:"name"`
 	Url                  string    `gorm:"column:url" json:"url"`
 	Status               string    `gorm:"column:status" json:"status"`
-	UserName             string    `gorm:"column:username" json:"username"`
-	Password             string    `gorm:"column:password" json:"password"`
+	AccessToken          string    `gorm:"column:access_token" json:"access_token"`
 	Branches             string    `gorm:"column:branches" json:"branches"`
 	CtlCreatedDate       time.Time `gorm:"type:timestamp;column:ctl_created_date" json:"ctl_created_date"`
 	CtlCreatedBy         string    `gorm:"column:ctl_created_by" json:"ctl_created_by"`
@@ -73,6 +79,18 @@ type RepositoryDTO struct {
 	Url     string                 `json:"url"`
 	Status  string                 `json:"status"`
 	Metrics map[string][]MetricDTO `json:"metric"`
+}
+
+type User struct {
+	UserEmail    string `gorm:"column:user_email;primary_key" json:"user_email"`
+	RepoId       int    `gorm:"column:repo_id" json:"repo_id"`
+	RepoFullName string `gorm:"column:repo_full_name" json:"repo_full_name"`
+	AccessToken  string `gorm:"column:access_token" json:"access_token"`
+	Branches     string `gorm:"column:branches" json:"branches"`
+}
+
+func (User) TableName() string {
+	return tableUser
 }
 
 type Metric struct {
@@ -108,7 +126,7 @@ type ContributorStats struct {
 	DeletionLoc  int     `gorm:"column:deletion_loc" json:"deletion_loc"`
 	NumFiles     int     `gorm:"column:num_files" json:"num_files"`
 	LOCPercent   float32 `gorm:"column:loc_percent" json:"loc_percent"`
-	Date         string  `gorm:"column:ate" json:"date"`
+	Date         string  `gorm:"column:date" json:"date"`
 }
 
 type ContributorName struct {
