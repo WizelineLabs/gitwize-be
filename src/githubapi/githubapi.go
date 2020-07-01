@@ -34,7 +34,6 @@ func GetListBranches(owner, repoName, accessToken string) ([]string, error) {
 	githubSvcClient := newGithubSvc(accessToken)
 	if branchInfos, _, err := githubSvcClient.GithubClient.Repositories.ListBranches(context.Background(),
 		owner, repoName, &github.BranchListOptions{Protected: nil, ListOptions: github.ListOptions{Page: 1, PerPage: 100}}); err != nil {
-		log.Println(utils.GetFuncName()+": ", err.Error())
 		return nil, err
 	} else {
 		for _, branch := range branchInfos {

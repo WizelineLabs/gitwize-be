@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/stretchr/testify/assert"
 	"gitwize-be/src/configuration"
-	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -19,12 +18,9 @@ func TestGetContributorStats(t *testing.T) {
 	from := to - 10*365*24*3600
 	w := performRequest(router, http.MethodGet, gwEndPointRepository+
 		strconv.Itoa(1)+"/contributor?date_from="+strconv.FormatInt(from, 10)+
-		"&date_to="+strconv.FormatInt(to, 10)+"&author_email=test@wizeline.com", nil)
+		"&date_to="+strconv.FormatInt(to, 10)+"&author_email=test@wizeline.com",
+		nil, header{Key: "AuthenticatedUser", Value: "tester@wizeline.com"})
 	assert.Equal(t, http.StatusOK, w.Code)
-
-	log.Println("query ", gwEndPointRepository+
-		strconv.Itoa(1)+"/contributor?date_from="+strconv.FormatInt(from, 10)+
-		"&date_to="+strconv.FormatInt(to, 10)+"&author_email=test@wizeline.com")
 
 	expectedResult := "{\"repository_id\":\\d+," +
 		"\"author_email\":\".*\"," +

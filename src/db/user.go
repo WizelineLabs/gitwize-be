@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/jinzhu/gorm"
 	"gitwize-be/src/utils"
 	"log"
 	"strconv"
@@ -9,6 +10,9 @@ import (
 func GetReposUser(userEmail string, repos *[]Repository) error {
 	users := make([]User, 0)
 	if err := gormDB.Where("user_email = ?", userEmail).Find(&users).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil
+		}
 		return err
 	}
 	if len(users) > 0 {
@@ -28,18 +32,21 @@ func GetReposUser(userEmail string, repos *[]Repository) error {
 func GetOneRepoUser(userEmail string, repoId string, repo *Repository) error {
 	user := User{}
 	if err := gormDB.Where("user_email = ? AND repo_id = ?", userEmail, repoId).Find(&user).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil
+		}
 		return err
 	}
-	if user.RepoId > 0 {
-		if err := findRepositoryBaseId(repo, strconv.Itoa(user.RepoId)); err != nil {
-			return err
-		}
-		repo.Branches = user.Branches
+
+	if err := findRepositoryBaseId(repo, strconv.Itoa(user.RepoId)); err != nil {
+		return err
 	}
+	repo.Branches = user.Branches
+
 	return nil
 }
 func CreateRepoUser(userEmail string, repo *Repository) error {
-	var existedRepo Repository
+	existedRepo := Repository{}
 	user := User{
 		UserEmail:    userEmail,
 		RepoFullName: repo.RepoFullName,
@@ -48,44 +55,68 @@ func CreateRepoUser(userEmail string, repo *Repository) error {
 	}
 
 	if err := findRepositoryBaseRepoName(&existedRepo, repo.RepoFullName); err != nil {
-		return err
-	}
-	if existedRepo.ID == 0 {
-		// Not created  before
+		if !gorm.IsRecordNotFoundError(err) {
+			return err
+		}
 		if err := createRepository(repo); err != nil {
+			utils.Trace()
 			return err
 		}
 		user.RepoId = repo.ID
 		existedRepo = *repo
-	} else {
-		repo.ID = existedRepo.ID
-		repo.Status = existedRepo.Status
-		user.RepoId = existedRepo.ID
 	}
+	repo.ID = existedRepo.ID
+	repo.Status = existedRepo.Status
+	user.RepoId = existedRepo.ID
 
 	if err := gormDB.Create(&user).Error; err != nil {
+		utils.Trace()
 		return err
 	}
 
 	existedRepo.NumRef += 1
-	return updateRepository(&existedRepo)
+	if err := updateRepository(&existedRepo); err != nil {
+		utils.Trace()
+		return err
+	}
+	return nil
 }
 
 func IsRepoUserExist(userEmail string, repoFullName string) (bool, error) {
-	user := User{}
-	if err := gormDB.Where("user_email = ? AND repo_full_name = ?", userEmail, repoFullName).Find(&user).Error; err != nil {
+	var user User
+	if err := gormDB.Where("user_email = ? AND repo_full_name = ?", userEmail, repoFullName).
+		Find(&user).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return false, nil
+		}
 		return false, err
 	}
-	if user.RepoId > 0 {
-		return true, nil
+
+	return true, nil
+}
+
+func DeleteRepoUser(userEmail string, repo *Repository) error {
+	user := User{}
+	if err := gormDB.Debug().Where("user_email = ? AND repo_full_name = ?", userEmail, repo.RepoFullName).
+		Delete(&user).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil
+		}
+		return err
 	}
-	return false, nil
-}
 
-func UpdateRepoUser(userEmail string, repoFullName string, repo *Repository) error {
-	return nil
-}
-func DeleteRepoUser(userEmail string, repoFullName string) error {
-
+	if repo.NumRef == 1 {
+		if err := DeleteMetricsInOneRepo(repo.ID); err != nil {
+			return err
+		}
+		if err := deleteRepository(repo); err != nil {
+			return err
+		}
+	} else {
+		repo.NumRef -= 1
+		if err := updateRepository(repo); err != nil {
+			return err
+		}
+	}
 	return nil
 }

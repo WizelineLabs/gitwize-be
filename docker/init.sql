@@ -1,12 +1,12 @@
 USE gitwize;
-CREATE TABLE user (
+CREATE TABLE repository_user (
 	user_email varchar(256) NOT NULL,
     repo_full_name varchar(256) NOT NULL,
     repo_id INT NOT NULL,
 	name varchar(256) NOT NULL,
 	access_token varchar(256) NULL,
 	branches varchar(8182) NULL,
-	PRIMARY KEY (user_email,repo_id)
+	PRIMARY KEY (user_email,repo_full_name)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
@@ -182,3 +182,80 @@ BEGIN
     CLOSE cur;
 END $$
 DELIMITER ;
+
+INSERT INTO repository_user(user_email,repo_full_name,repo_id,name,access_token,branches)
+    VALUES ("tester@wizeline.com","wizeline/gitwize-be",1,"gitwize-be","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","master");
+INSERT INTO repository(repo_full_name,name,status,url,access_token,branches,num_ref,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by,ctl_last_metric_updated)
+    VALUES ("wizeline/gitwize-be", "gitwize-be","AVAILABLE","https://github.com/wizeline/gitwize-be","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","master",1,now(),"tester@wizeline.com",now(),"tester@wizeline.com","1970-01-01 00:00:00");
+
+INSERT INTO commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, total_loc, year, month, day, hour, commit_time_stamp)
+    VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'test message', '1', '32', '20', '1', '1000', 2020, '6', '20', '0', "2020-06-20 00:00:00");
+
+INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp)
+    VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file1', '1', '2', 2020, '6', '20', '0', "2020-06-20 00:00:00");
+INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp)
+    VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file2', '10', '5', 2020, '6', '20', '0', "2020-06-20 00:00:00");
+
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,100);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,110);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,120);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",4,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,130);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",5,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,140);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",6,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,150);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",7,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,160);
+
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 3,105);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 3,115);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 3,125);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",4,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 3,135);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",5,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 3,145);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",6,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 3,155);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",7,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 3,165);
+
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 1,200);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 1,210);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 1,220);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",4,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 1,230);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",5,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 1,240);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",6,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 1,250);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",7,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 1,260);
+
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 4,205);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 4,215);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 4,225);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",4,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 4,235);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",5,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 4,245);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",6,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 4,255);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",7,2020,2020*100 + 6,(2020*100 + 6)* 100 + 1,((2020*100 + 6)* 100 + 1) * 100 + 4,265);
+
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 1,300);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 1,310);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 1,320);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",4,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 1,330);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",5,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 1,340);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",6,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 1,350);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",7,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 1,360);
+
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 3,305);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 3,315);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 3,325);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",4,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 3,335);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",5,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 3,345);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",6,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 3,355);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",7,2020,2020*100 + 5,(2020*100 + 5)* 100 + 31,((2020*100 + 5)* 100 + 31) * 100 + 3,365);
+
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 2,400);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 2,410);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 2,420);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",4,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 2,430);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",5,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 2,440);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",6,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 2,450);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",7,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 2,460);
+
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 5,405);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 5,415);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 5,425);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",4,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 5,435);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",5,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 5,445);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",6,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 5,455);
+INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",7,2020,2020*100 + 5,(2020*100 + 5)* 100 + 30,((2020*100 + 5)* 100 + 30) * 100 + 5,465);

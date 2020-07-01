@@ -1,10 +1,9 @@
 package auth
 
 import (
-	"encoding/json"
-	"fmt"
 	verifier "github.com/okta/okta-jwt-verifier-golang"
 	"gitwize-be/src/utils"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -29,29 +28,13 @@ func (o OktaJWTVerifier) Verify(token string, r *http.Request) bool {
 		ClaimsToValidate: tv,
 	}
 
-	jvVerifier := jv.New()
-	if _, err := jvVerifier.VerifyAccessToken(token); err != nil {
+	if jwt, err := jv.New().VerifyAccessToken(token); err != nil {
 		return false
-	}
-	metaDataUrl := jvVerifier.Issuer + jvVerifier.Discovery.GetWellKnownUrl()
-
-	resp, err := http.Get(metaDataUrl)
-
-	if err != nil {
-		fmt.Printf(utils.GetFuncName()+": Request for metadata was not successful: %s\n", err.Error())
-		return false
-	}
-
-	defer resp.Body.Close()
-
-	metaData := make(map[string]interface{})
-	json.NewDecoder(resp.Body).Decode(&metaData)
-
-	if respData, err := jvVerifier.Adaptor.Decode(token, metaData["jwks_uri"].(string)); err == nil {
-		r.Header.Set("AuthenticatedUser", respData.(map[string]interface{})["sub"].(string))
+	} else {
+		r.Header.Set("AuthenticatedUser", jwt.Claims["sub"].(string))
+		log.Println(utils.GetFuncName() + ": AuthenticatedUser=" + jwt.Claims["sub"].(string))
 		return true
 	}
-	return false
 }
 
 // IsAuthorized verifies access token passed in Authorization header

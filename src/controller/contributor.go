@@ -14,29 +14,58 @@ type ContributorData struct {
 }
 
 func getContributorStats(c *gin.Context) {
+	userId := extractUserInfo(c)
 	repoID := c.Param("id")
-	// author := c.Query("author_email")
 
 	from, err := strconv.Atoi(c.Query("date_from"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
 	}
 
 	to, err := strconv.Atoi(c.Query("date_to"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
+		return
+	}
+
+	repo := db.Repository{}
+	if err := db.GetOneRepoUser(userId, repoID, &repo); err != nil {
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
+		return
+	}
+
+	if repo.ID == 0 {
+		c.JSON(ErrCodeEntityNotFound, RestErr{
+			ErrorKey:     ErrKeyEntityNotFound,
+			ErrorMessage: ErrMsgEntityNotFound})
 		return
 	}
 
 	data, err := db.GetChartContributorStats(repoID, getStartDateFromEpoch(from), getEndDateFromEpoch(to))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
 	}
 	contributorList, err := db.GetListContributors(repoID, getStartDateFromEpoch(from), getEndDateFromEpoch(to))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
+		return
 	}
 
 	contributorData := ContributorData{

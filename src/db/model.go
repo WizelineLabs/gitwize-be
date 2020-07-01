@@ -46,7 +46,7 @@ const (
 	tableMetric          = "metric"
 	tableContributor     = "commit_data"
 	tableContributorFile = "file_stat_data"
-	tableUser            = "user"
+	tableUser            = "repository_user"
 )
 
 type Repository struct {
