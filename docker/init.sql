@@ -1,12 +1,26 @@
 USE gitwize;
+CREATE TABLE repository_user (
+	user_email varchar(256) NOT NULL,
+    repo_full_name varchar(256) NOT NULL,
+    repo_id INT NOT NULL,
+	name varchar(256) NOT NULL,
+	access_token varchar(256) NULL,
+	branches varchar(8182) NULL,
+	PRIMARY KEY (user_email,repo_full_name)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8
+COLLATE=utf8_general_ci;
+
 CREATE TABLE repository (
 	id INT NOT NULL AUTO_INCREMENT,
+    repo_full_name varchar(256) NOT NULL,
 	name varchar(256) NOT NULL,
 	status varchar(32) NOT NULL,
 	url varchar(256) NOT NULL,
-	username varchar(256) NULL,
-	password varchar(256) NULL,
+	access_token varchar(256) NULL,
 	branches varchar(8182) NULL,
+	num_ref int NOT NULL,
 	ctl_created_date TIMESTAMP NOT NULL,
 	ctl_created_by varchar(256) NOT NULL,
 	ctl_modified_date TIMESTAMP NULL,
@@ -17,6 +31,8 @@ CREATE TABLE repository (
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COLLATE=utf8_general_ci;
+
+CREATE INDEX idx_repo_full_name ON repository (repo_full_name);
 
 CREATE TABLE metric (
 	id BIGINT NOT NULL AUTO_INCREMENT,
@@ -167,15 +183,17 @@ BEGIN
 END $$
 DELIMITER ;
 
-INSERT INTO repository(name,status,url,username,password,branches,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by,ctl_last_metric_updated)
-    VALUES ("go-git","ONGOING","https://github.com/go-git/go-git.git","tester1","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","",now(),"tester1",now(),"tester1","1970-01-01 00:00:00");
+INSERT INTO repository_user(user_email,repo_full_name,repo_id,name,access_token,branches)
+    VALUES ("tester@wizeline.com","wizeline/gitwize-be",1,"gitwize-be","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","master");
+INSERT INTO repository(repo_full_name,name,status,url,access_token,branches,num_ref,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by,ctl_last_metric_updated)
+    VALUES ("wizeline/gitwize-be", "gitwize-be","AVAILABLE","https://github.com/wizeline/gitwize-be","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","master",1,now(),"tester@wizeline.com",now(),"tester@wizeline.com","1970-01-01 00:00:00");
 
-INSERT INTO gitwize.commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, total_loc, year, month, day, hour, commit_time_stamp)
+INSERT INTO commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, total_loc, year, month, day, hour, commit_time_stamp)
     VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'test message', '1', '32', '20', '1', '1000', 2020, '6', '20', '0', "2020-06-20 00:00:00");
 
-INSERT INTO gitwize.file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp)
+INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp)
     VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file1', '1', '2', 2020, '6', '20', '0', "2020-06-20 00:00:00");
-INSERT INTO gitwize.file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp)
+INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp)
     VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file2', '10', '5', 2020, '6', '20', '0', "2020-06-20 00:00:00");
 
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,100);

@@ -7,7 +7,7 @@ import (
 
 type mockJWTVerifier struct{}
 
-func (m mockJWTVerifier) Verify(token string) bool {
+func (m mockJWTVerifier) Verify(token string, r *http.Request) bool {
 	if token == "valid-token" {
 		return true
 	}

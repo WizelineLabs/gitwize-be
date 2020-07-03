@@ -1,5 +1,7 @@
 package db
 
+import "github.com/jinzhu/gorm"
+
 //GetChartContributorStats get statistics by contributor
 func GetChartContributorStats(id string, since string, until string) ([]ContributorStats, error) {
 
@@ -20,7 +22,9 @@ func GetChartContributorStats(id string, since string, until string) ([]Contribu
 		Find(&contributorStats).Error
 
 	if err != nil {
-		return nil, err
+		if !gorm.IsRecordNotFoundError(err) {
+			return nil, err
+		}
 	}
 	return contributorStats, nil
 }
@@ -33,7 +37,9 @@ func GetListContributors(id string, since string, until string) ([]ContributorNa
 		Select("distinct(author_email) as author_email, CONCAT_WS(\", \", author_name) as author_name").
 		Group("author_email").Find(&contributorNames).Error
 	if err != nil {
-		return nil, err
+		if !gorm.IsRecordNotFoundError(err) {
+			return nil, err
+		}
 	}
 	return contributorNames, nil
 }

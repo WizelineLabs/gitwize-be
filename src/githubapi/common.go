@@ -2,13 +2,9 @@ package githubapi
 
 import (
 	"context"
-	"errors"
 	"github.com/google/go-github/v32/github"
-	"gitwize-be/src/utils"
 	"golang.org/x/oauth2"
-	"log"
 	"os"
-	"strings"
 )
 
 var notAbleToParseUrl string = "Not be able to parse repository url"
@@ -36,23 +32,4 @@ func newGithubClient(token string) *github.Client {
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
 	return client
-}
-
-func parseGithubUrl(repoUrl string) (string, string, error) {
-	var owner, repo string
-	if strings.HasPrefix(repoUrl, "git") {
-		s := strings.Split(repoUrl, ":")[1]
-		owner = strings.Split(s, "/")[0]
-		repo = strings.Split(s, "/")[1]
-	} else if strings.HasPrefix(repoUrl, "https") {
-		s := strings.Split(repoUrl, "/")
-		owner = s[len(s)-2]
-		repo = s[len(s)-1]
-	} else {
-		err := errors.New(notAbleToParseUrl)
-		return "", "", err
-	}
-	repo = strings.Replace(repo, ".git", "", -1)
-	log.Println(utils.GetFuncName(), ": owner=", owner, ", repo=", repo)
-	return owner, repo, nil
 }

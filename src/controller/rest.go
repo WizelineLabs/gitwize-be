@@ -16,6 +16,17 @@ import (
 	"time"
 )
 
+func extractUserInfo(c *gin.Context) string {
+	userId := c.Request.Header.Get("AuthenticatedUser")
+	if userId == "" {
+		c.JSON(ErrCodeNotAuthenticatedUser, RestErr{
+			ErrorKey:     ErrKeyNotAuthenticatedUser,
+			ErrorMessage: ErrMsgNotAuthenticatedUser})
+		return ""
+	}
+	return userId
+}
+
 func posAdminOperation(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 	opId, err := strconv.Atoi(c.Param("op_id"))
@@ -42,15 +53,26 @@ func posAdminOperation(c *gin.Context) {
 }
 func getRepos(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
+
+	userId := extractUserInfo(c)
+	if userId == "" {
+		return
+	}
 	id := c.Param("id")
-	var repo db.Repository
-	if err := db.FindRepository(&repo, id); err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+	repo := db.Repository{}
+	if err := db.GetOneRepoUser(userId, id, &repo); err != nil {
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
 	}
 
 	if repo.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + id + " doesn't exist"})
+		c.JSON(ErrCodeEntityNotFound, RestErr{
+			ErrorKey:     ErrKeyEntityNotFound,
+			ErrorMessage: ErrMsgEntityNotFound})
+		return
 	} else {
 		branches := make([]string, 0)
 		if len(repo.Branches) > 0 {
@@ -69,9 +91,17 @@ func getRepos(c *gin.Context) {
 
 func getListRepos(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
-	var repos []db.Repository
-	if err := db.GetListRepository(&repos); err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+
+	userId := extractUserInfo(c)
+	if userId == "" {
+		return
+	}
+	repos := make([]db.Repository, 0)
+	if err := db.GetReposUser(userId, &repos); err != nil {
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
 	}
 
@@ -98,109 +128,131 @@ func postRepos(c *gin.Context) {
 	var reqInfo RepoInfoPost
 	var err error
 	var branches []string
+	var owner, repoName string
 
+	userId := extractUserInfo(c)
+	if userId == "" {
+		return
+	}
 	if err = c.BindJSON(&reqInfo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(ErrCodeBadJsonFormat, RestErr{
+			ErrorKey:     ErrKeyBadJsonFormat,
+			ErrorMessage: err.Error(),
+		})
 		return
 	}
 
-	if branches, err = githubapi.GetListBranches(reqInfo.Url, reqInfo.Password); err != nil {
+	if owner, repoName, err = githubapi.ParseGithubUrl(reqInfo.Url); err != nil {
+		c.JSON(ErrCodeRepoInvalidUrl, RestErr{
+			ErrKeyRepoInvalidUrl,
+			ErrMsgRepoInvalidUrl,
+		})
+		return
+	}
+
+	if duplicated, err := db.IsRepoUserExist(userId, owner+"/"+repoName); err != nil {
+		utils.Trace()
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
+		return
+	} else if duplicated {
+		c.JSON(ErrCodeRepoExisted, RestErr{
+			ErrKeyRepoExisted,
+			ErrMsgRepoExisted,
+		})
+		return
+	}
+
+	if branches, err = githubapi.GetListBranches(owner, repoName, reqInfo.AccessToken); err != nil {
 		if strings.Contains(err.Error(), "Bad credentials") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "401 Bad credentials"})
-		} else if strings.Contains(err.Error(), "Bad credentials") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "404 Not Found"})
+			c.JSON(ErrCodeRepoBadCredential, RestErr{
+				ErrKeyRepoBadCredential,
+				ErrMsgRepoBadCredential,
+			})
+		} else if strings.Contains(err.Error(), "Not Found") {
+			c.JSON(ErrCodeRepoNotFound, RestErr{
+				ErrKeyRepoNotFound,
+				ErrMsgRepoNotFound,
+			})
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, RestErr{
+				ErrKeyUnknownIssue,
+				err.Error(),
+			})
 		}
 		return
 	}
 
-	password := strings.TrimSpace(reqInfo.Password)
-	if password != "" { // if password empty, dont ecrypt to use default token later
-		password = cypher.EncryptString(password, configuration.CurConfiguration.Cypher.PassPhase)
+	accessToken := strings.TrimSpace(reqInfo.AccessToken)
+	if accessToken != "" { // if access token is empty, not encrypt and use default token
+		accessToken = cypher.EncryptString(accessToken, configuration.CurConfiguration.Cypher.PassPhase)
 	}
 
-	createdRepos := db.Repository{
+	createdRepo := db.Repository{
 		Name:                 reqInfo.Name,
+		RepoFullName:         owner + "/" + repoName,
 		Url:                  reqInfo.Url,
-		Status:               reqInfo.Status,
-		UserName:             reqInfo.User,
-		Password:             password,
+		Status:               statusDataLoading,
+		AccessToken:          accessToken,
 		Branches:             strings.Join(branches, ","),
-		CtlCreatedBy:         reqInfo.User,
+		NumRef:               0,
+		CtlCreatedBy:         userId,
 		CtlCreatedDate:       time.Now(),
-		CtlModifiedBy:        reqInfo.User,
+		CtlModifiedBy:        userId,
 		CtlModifiedDate:      time.Now(),
 		CtlLastMetricUpdated: time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
-	if err := db.CreateRepository(&createdRepos); err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+
+	if err := db.CreateRepoUser(userId, &createdRepo); err != nil {
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
 	}
 
 	repoInfo := RepoInfoGet{
-		ID:          createdRepos.ID,
-		Name:        createdRepos.Name,
-		Url:         createdRepos.Url,
-		Status:      createdRepos.Status,
+		ID:          createdRepo.ID,
+		Name:        createdRepo.Name,
+		Url:         createdRepo.Url,
+		Status:      createdRepo.Status,
 		Branches:    branches,
-		LastUpdated: createdRepos.CtlModifiedDate,
+		LastUpdated: createdRepo.CtlModifiedDate,
 	}
 
 	c.JSON(http.StatusCreated, repoInfo)
 }
 
-func putRepos(c *gin.Context) {
-	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
-	var reqInfo RepoInfoPost
-	if err := c.BindJSON(&reqInfo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	id := c.Param("id")
-	var repo db.Repository
-	if err := db.FindRepository(&repo, id); err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	if repo.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + id + " doesn't exist"})
-	} else {
-		repo.Name = reqInfo.Name
-		repo.Url = reqInfo.Url
-		repo.Status = reqInfo.Status
-		repo.Branches = strings.Join(reqInfo.Branches, ",")
-		repo.CtlModifiedBy = reqInfo.User
-		repo.CtlModifiedDate = time.Now()
-		if err := db.UpdateRepository(&repo); err != nil {
-			c.JSON(http.StatusInternalServerError, err.Error())
-		}
-		c.JSON(http.StatusOK, repo)
-	}
-}
-
 func delRepos(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
+	userId := extractUserInfo(c)
+	if userId == "" {
+		return
+	}
+
 	id := c.Param("id")
-	var repo db.Repository
-	if err := db.FindRepository(&repo, id); err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+	repo := db.Repository{}
+	if err := db.GetOneRepoUser(userId, id, &repo); err != nil {
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
 	}
 
 	if repo.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + id + " doesn't exist"})
+		c.JSON(ErrCodeEntityNotFound, RestErr{
+			ErrorKey:     ErrKeyEntityNotFound,
+			ErrorMessage: ErrMsgEntityNotFound})
 		return
 	} else {
-		if err := db.DeleteRepository(&repo); err != nil {
-			c.JSON(http.StatusInternalServerError, err.Error())
-			return
-		}
-		// cascade delete metric table also
-		if err := db.DeleteMetricsInOneRepo(repo.ID); err != nil {
-			c.JSON(http.StatusInternalServerError, err.Error())
+		if err := db.DeleteRepoUser(userId, &repo); err != nil {
+			c.JSON(http.StatusInternalServerError, RestErr{
+				ErrKeyUnknownIssue,
+				err.Error(),
+			})
 			return
 		}
 		c.JSON(http.StatusNoContent, nil)
@@ -209,6 +261,11 @@ func delRepos(c *gin.Context) {
 
 func getStats(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
+	userId := extractUserInfo(c)
+	if userId == "" {
+		return
+	}
+
 	idRepository := c.Param("id")
 	metricTypeName := c.DefaultQuery("metric_type", "ALL")
 	metricTypeVal, ok := db.MapNameToTypeMetric[metricTypeName]
@@ -218,28 +275,43 @@ func getStats(c *gin.Context) {
 
 	from, err := strconv.Atoi(c.Query("date_from"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
 	}
 
 	to, err := strconv.Atoi(c.Query("date_to"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
 	}
 
-	var repo db.Repository
-	if err := db.FindRepository(&repo, idRepository); err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+	repo := db.Repository{}
+	if err := db.GetOneRepoUser(userId, idRepository, &repo); err != nil {
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
 	}
+
 	if repo.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Repository " + idRepository + " doesn't exist"})
+		c.JSON(ErrCodeEntityNotFound, RestErr{
+			ErrorKey:     ErrKeyEntityNotFound,
+			ErrorMessage: ErrMsgEntityNotFound})
 		return
 	} else {
 		result, err := db.GetMetricBaseOnType(idRepository, metricTypeVal, int64(from), int64(to))
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, err.Error())
+			c.JSON(http.StatusInternalServerError, RestErr{
+				ErrKeyUnknownIssue,
+				err.Error(),
+			})
 			return
 		} else {
 			repositoryDTO := db.RepositoryDTO{
@@ -254,14 +326,14 @@ func getStats(c *gin.Context) {
 	}
 }
 
-// AuthMiddleware checks for valid access token
+// authMiddleware checks for valid access token
 func authMiddleware(c *gin.Context) {
 	authDisabled := configuration.CurConfiguration.Auth.AuthDisable == "true"
 	if !authDisabled && !auth.IsAuthorized(nil, c.Request) {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"message.key": "system.unauthorized",
-			"message":     "Unauthorized!",
-		})
+		c.AbortWithStatusJSON(ErrCodeUnauthorized, RestErr{
+			ErrorKey:     ErrKeyUnauthorized,
+			ErrorMessage: ErrMsgUnauthorized},
+		)
 	}
 
 	c.Next()
@@ -293,7 +365,7 @@ func Initialize() *gin.Engine {
 		repoApi.GET("", getListRepos)
 		repoApi.GET(gwRepoGetPutDel, getRepos)
 		repoApi.POST("", postRepos)
-		repoApi.PUT(gwRepoGetPutDel, putRepos)
+		//repoApi.PUT(gwRepoGetPutDel, putRepos)
 		repoApi.DELETE(gwRepoGetPutDel, delRepos)
 		repoApi.GET(gwRepoStats, getStats)
 		repoApi.GET(gwContributorStats, getContributorStats)

@@ -6,34 +6,37 @@ import (
 	"testing"
 )
 
-func Test_GetListBranches_NotCorrectRepoUrl(t *testing.T) {
+func Test_ParseGithubUrl_NotCorrectRepoUrl(t *testing.T) {
 	wrongGithubUrl := "http://wizeline/gitwize-fe"
-	_, err := GetListBranches(wrongGithubUrl, "")
+	_, _, err := ParseGithubUrl(wrongGithubUrl)
 	assert.Equal(t, notAbleToParseUrl, err.Error())
 
 }
 
 func Test_GetListBranches_NotExistRepoName(t *testing.T) {
-	notExistRepoName := "https://github.com/wizeline/not-exist-repo-name"
-	expectedResult := ".*404 Not Found.*"
+	owner := "wizeline"
+	notExistRepoName := "not-exist-repo-name"
+	expectedResult := "Not Found"
 
-	_, err := GetListBranches(notExistRepoName, "")
+	_, err := GetListBranches(owner, notExistRepoName, "")
 	assert.Regexp(t, regexp.MustCompile(expectedResult), err.Error())
 }
 
 func Test_GetListBranches_BadAuthorization(t *testing.T) {
-	repoName := "https://github.com/wizeline/gitwize-be"
-	expectedResult := ".*Bad credentials.*"
+	owner := "wizeline"
+	repoName := "gitwize-be"
+	expectedResult := "Bad credentials"
 
-	_, err := GetListBranches(repoName, "Bad Token")
+	_, err := GetListBranches(owner, repoName, "Bad Token")
 	assert.Regexp(t, regexp.MustCompile(expectedResult), err.Error())
 }
 
 func Test_GetListBranches_OK(t *testing.T) {
-	repoName := "https://github.com/wizeline/gitwize-be"
+	owner := "wizeline"
+	repoName := "gitwize-be"
 	expectedResult := "\\[.*\\]"
 
-	branches, err := GetListBranches(repoName, "")
+	branches, err := GetListBranches(owner, repoName, "")
 	assert.Nil(t, err)
 	assert.Regexp(t, regexp.MustCompile(expectedResult), branches)
 }
