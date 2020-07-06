@@ -215,10 +215,10 @@ func postRepos(c *gin.Context) {
 	}
 
 	repoPayload := lambda.RepoPayload{
-		RepoID:   createdRepos.ID,
-		RepoName: createdRepos.Name,
-		URL:      createdRepos.Url,
-		RepoPass: password,
+		RepoID:   createdRepo.ID,
+		RepoName: createdRepo.Name,
+		URL:      createdRepo.Url,
+		RepoPass: strings.TrimSpace(reqInfo.AccessToken), // sending non-decrypted value, it will be decrypted on lambda
 		Branch:   "",
 	}
 	lambda.Trigger(repoPayload, lambda.GetLoadFullRepoLambdaFunc(), "ap-southeast-1")
