@@ -8,13 +8,13 @@ import (
 
 //GetCodeChangeVelocity get netChanges
 func GetNetChanges(id string, start time.Time, end time.Time) (map[string]string, error) {
-	startMonth, startYear := int(start.Month()), start.Year()
-	endMonth, endYear := int(end.Month()), end.Year()
+	start = beginningOfMonth(start)
+	end = endOfMonth(end)
 	netChanges := make([]NetChange, 0)
 
-	err := gormDB.
+	err := gormDB.Debug().
 		Select("month, SUM(addition_loc)-SUM(deletion_loc) as value").
-		Where("repository_id = ? AND year >= ? AND year <= ? AND month >= ? AND month <= ?", id, startYear, endYear, startMonth, endMonth).
+		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ?", id, start, end).
 		Group("year, month").
 		Order("year, month").
 		Find(&netChanges).Error
@@ -30,4 +30,12 @@ func GetNetChanges(id string, start time.Time, end time.Time) (map[string]string
 		result[time.Month(v.Month).String()] = v.Value
 	}
 	return result, nil
+}
+
+func beginningOfMonth(date time.Time) time.Time {
+	return date.AddDate(0, 0, -date.Day()+1)
+}
+
+func endOfMonth(date time.Time) time.Time {
+	return date.AddDate(0, 1, -date.Day())
 }
