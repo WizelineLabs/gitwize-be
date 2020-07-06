@@ -147,3 +147,9 @@ type NetChange struct {
 func (NetChange) TableName() string {
 	return tableNetChange
 }
+
+type QuarterlyTrends struct {
+	AveragePRTime        map[string]int `json:"averagePRTime"`
+	PercentageRejectedPR map[string]int `json:"percentageRejectedPR"`
+	AveragePRSize        map[string]int `json:"averagePRSize"`
+}

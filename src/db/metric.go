@@ -58,3 +58,14 @@ func DeleteMetricsInOneRepo(idRepository int) error {
 	}
 	return nil
 }
+
+func GetQuarterlyTrends(idRepository string, epochFrom int64, epochTo int64) (QuarterlyTrends, error) {
+	var quarterlyTrends = QuarterlyTrends{}
+	//dateFrom := time.Unix(epochFrom, 0)
+	//dateTo := time.Unix(epochTo, 0)
+	//yearFrom, monthFrom := dateFrom.Year(), int(dateFrom.Month())
+	//from := yearFrom*100 + monthFrom
+	//yearTo, monthTo := dateTo.Year(), int(dateTo.Month())
+	//to := yearTo*100 + monthTo
+	return quarterlyTrends, nil
+}
