@@ -7,29 +7,32 @@ import (
 )
 
 //GetCodeChangeVelocity get netChanges
-func GetNetChanges(id string, start time.Time, end time.Time) (map[string]string, error) {
+func GetCodeVelocity(id string, start time.Time, end time.Time) (map[string]string, map[string]string, error) {
 	start = beginningOfMonth(start)
 	end = endOfMonth(end)
-	netChanges := make([]NetChange, 0)
+	cvdbEntities := make([]CodeVelocityDBEntity, 0)
 
 	err := gormDB.Debug().
-		Select("month, SUM(addition_loc)-SUM(deletion_loc) as value").
+		Select("month, SUM(addition_loc)-SUM(deletion_loc) as net_changes, COUNT(*) as no_commits").
 		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ?", id, start, end).
 		Group("year, month").
 		Order("year, month").
-		Find(&netChanges).Error
+		Find(&cvdbEntities).Error
 
 	if err != nil {
 		if !gorm.IsRecordNotFoundError(err) {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
-	result := make(map[string]string)
-	for _, v := range netChanges {
-		result[time.Month(v.Month).String()] = v.Value
+	netChangesMap := make(map[string]string)
+	noCommitsMap := make(map[string]string)
+	for _, v := range cvdbEntities {
+		netChangesMap[time.Month(v.Month).String()] = v.NetChanges
+		noCommitsMap[time.Month(v.Month).String()] = v.NoCommits
 	}
-	return result, nil
+
+	return noCommitsMap, netChangesMap, nil
 }
 
 func beginningOfMonth(date time.Time) time.Time {
