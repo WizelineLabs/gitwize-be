@@ -13,6 +13,7 @@ const (
 	gwRepoPost           = gwEndPointRepository
 	gwRepoStats          = ":id/stats"
 	gwContributorStats   = ":id/contributor"
+	gwCodeVelocity       = ":id/code-velocity"
 )
 
 type AdminOperation int

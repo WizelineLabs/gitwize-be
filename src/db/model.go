@@ -47,6 +47,7 @@ const (
 	tableContributor     = "commit_data"
 	tableContributorFile = "file_stat_data"
 	tableUser            = "repository_user"
+	tableNetChange       = "commit_data"
 )
 
 type Repository struct {
@@ -136,4 +137,13 @@ func (ContributorStats) TableName() string {
 
 func (Contributor) TableName() string {
 	return tableContributor
+}
+
+type NetChange struct {
+	Month int    `gorm:"column:month"`
+	Value string `gorm:"column:value"`
+}
+
+func (NetChange) TableName() string {
+	return tableNetChange
 }
