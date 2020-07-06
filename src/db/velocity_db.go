@@ -16,7 +16,7 @@ func GetNetChanges(id string, start time.Time, end time.Time) (map[string]string
 		Select("month, SUM(addition_loc)-SUM(deletion_loc) as value").
 		Where("repository_id = ? AND year >= ? AND year <= ? AND month >= ? AND month <= ?", id, startYear, endYear, startMonth, endMonth).
 		Group("year, month").
-		Order("year, month DESC").
+		Order("year, month").
 		Find(&netChanges).Error
 
 	if err != nil {
