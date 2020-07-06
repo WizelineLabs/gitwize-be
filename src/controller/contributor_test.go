@@ -7,18 +7,17 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
-	"time"
 )
 
 // Test direct curl http://0.0.0.0:8000/api/v1/repositories/1/contributor?date_from=1277788580&date_to=1593148580&author_email=test@wizeline.com
 func TestGetContributorStats(t *testing.T) {
 	configuration.CurConfiguration.Auth.AuthDisable = "true"
 
-	to := time.Now().Unix()
-	from := to - 10*365*24*3600
+	to := int64(2524637115) // 2050
+	from := int64(0)        // 1970
 	w := performRequest(router, http.MethodGet, gwEndPointRepository+
 		strconv.Itoa(1)+"/contributor?date_from="+strconv.FormatInt(from, 10)+
-		"&date_to="+strconv.FormatInt(to, 10)+"&author_email=test@wizeline.com",
+		"&date_to="+strconv.FormatInt(to, 10),
 		nil, header{Key: "AuthenticatedUser", Value: "tester@wizeline.com"})
 	assert.Equal(t, http.StatusOK, w.Code)
 
