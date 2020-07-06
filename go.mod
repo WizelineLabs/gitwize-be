@@ -3,6 +3,7 @@ module gitwize-be
 go 1.14
 
 require (
+	github.com/aws/aws-sdk-go v1.32.11
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/google/go-github/v32 v32.0.0
