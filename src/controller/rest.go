@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	cors "github.com/rs/cors/wrapper/gin"
 	"gitwize-be/src/auth"
 	"gitwize-be/src/configuration"
 	"gitwize-be/src/cypher"
@@ -15,6 +13,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	cors "github.com/rs/cors/wrapper/gin"
 )
 
 func extractUserInfo(c *gin.Context) string {
@@ -379,6 +380,7 @@ func Initialize() *gin.Engine {
 		repoApi.DELETE(gwRepoGetPutDel, delRepos)
 		repoApi.GET(gwRepoStats, getStats)
 		repoApi.GET(gwContributorStats, getContributorStats)
+		repoApi.GET(gwCodeVelocity, getCodeChangeVelocity)
 	}
 
 	return ginCont
