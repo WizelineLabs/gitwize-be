@@ -60,13 +60,19 @@ func DeleteMetricsInOneRepo(idRepository int) error {
 	return nil
 }
 
-func GetQuarterlyTrends(idRepository string, epochFrom int64, epochTo int64) (map[string]int, error) {
+func GetQuarterlyTrends(idRepository string, epochFrom int64, epochTo int64) (QuarterlyTrends, error) {
 	dateFrom := time.Unix(epochFrom, 0)
 	dateTo := time.Unix(epochTo, 0)
 	yearFrom, monthFrom, dayFrom, hourFrom := dateFrom.Year(), int(dateFrom.Month()), dateFrom.Day(), dateFrom.Hour()
 	from := ((yearFrom*100+monthFrom)*100+dayFrom)*100 + hourFrom
 	yearTo, monthTo, dayTo, hourTo := dateTo.Year(), int(dateTo.Month()), dateTo.Day(), dateTo.Hour()
 	to := ((yearTo*100+monthTo)*100+dayTo)*100 + hourTo
+
+	result := QuarterlyTrends{
+		PercentageRejectedPR: make(map[string]int),
+		AveragePRSize:        make(map[string]int),
+		AveragePRTime:        make(map[string]int),
+	}
 
 	rejectedPRs := make([]RejectedMergedPR, 0)
 	if err := gormDB.Debug().
@@ -76,7 +82,7 @@ func GetQuarterlyTrends(idRepository string, epochFrom int64, epochTo int64) (ma
 		Order("year, month").
 		Find(&rejectedPRs).Error; err != nil {
 		if !gorm.IsRecordNotFoundError(err) {
-			return nil, err
+			return QuarterlyTrends{}, err
 		}
 	}
 
@@ -88,7 +94,7 @@ func GetQuarterlyTrends(idRepository string, epochFrom int64, epochTo int64) (ma
 		Order("year, month").
 		Find(&mergedPRs).Error; err != nil {
 		if !gorm.IsRecordNotFoundError(err) {
-			return nil, err
+			return QuarterlyTrends{}, err
 		}
 	}
 	mergedPRsMap := make(map[int]int)
@@ -96,9 +102,25 @@ func GetQuarterlyTrends(idRepository string, epochFrom int64, epochTo int64) (ma
 		mergedPRsMap[pr.Month] = pr.Value
 	}
 
-	result := make(map[string]int)
 	for _, v := range rejectedPRs {
-		result[time.Month(v.Month).String()] = v.Value * 100 / (v.Value + mergedPRsMap[v.Month])
+		result.PercentageRejectedPR[time.Month(v.Month).String()] = v.Value * 100 / (v.Value + mergedPRsMap[v.Month])
 	}
+
+	durationSizePRs := make([]DurationSizePR, 0)
+	if err := gormDB.Debug().
+		Select("(closed_month%100) as closed_month, AVG(additions) as additions, AVG(deletions) as deletions, AVG(review_duration) as review_duration").
+		Where("repository_id = ? AND state = ? AND closed_hour >= ? AND closed_hour <= ? ", idRepository, "merged", from, to).
+		Group("closed_year, closed_month").
+		Order("closed_year, closed_month").
+		Find(&durationSizePRs).Error; err != nil {
+		if !gorm.IsRecordNotFoundError(err) {
+			return QuarterlyTrends{}, err
+		}
+	}
+	for _, v := range durationSizePRs {
+		result.AveragePRTime[time.Month(v.Month).String()] = v.Duration / 3600
+		result.AveragePRSize[time.Month(v.Month).String()] = v.Addition + v.Deletion
+	}
+
 	return result, nil
 }
