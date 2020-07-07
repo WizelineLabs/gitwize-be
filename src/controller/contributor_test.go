@@ -22,13 +22,13 @@ func TestGetContributorStats(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	expectedResult := "{\"repository_id\":\\d+," +
-		"\"author_email\":\".*\"," +
-		"\"author_name\":\".*\"," +
+		"\"email\":\".*\"," +
+		"\"name\":\".*\"," +
 		"\"commits\":\\d+," +
-		"\"addition_loc\":\\d+," +
-		"\"deletion_loc\":\\d+," +
-		"\"num_files\":\\d+," +
-		"\"loc_percent\":\\d+," +
+		"\"additions\":\\d+," +
+		"\"deletions\":\\d+," +
+		"\"filesChange\":\\d+," +
+		"\"changePercent\":\\d+," +
 		"\"date\":\".*\"}"
 	assert.Regexp(t, regexp.MustCompile(expectedResult), w.Body.String())
 }
