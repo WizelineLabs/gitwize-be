@@ -10,9 +10,9 @@ import (
 )
 
 type CodeVelocity struct {
-	Commits    map[string]string `json:"commits"`
-	NetChanges map[string]string `json:"netChanges"`
-	//NewCodeChanges map[string]string `json:"newCodeChanges"`
+	Commits        map[string]string `json:"commits"`
+	NetChanges     map[string]string `json:"netChanges"`
+	NewCodeChanges map[string]string `json:"newCodeChanges"`
 }
 
 func getCodeChangeVelocity(c *gin.Context) {
@@ -49,6 +49,8 @@ func getCodeChangeVelocity(c *gin.Context) {
 	velocity := CodeVelocity{
 		Commits:    commits,
 		NetChanges: netChanges,
+		// Fake newCodeChanges
+		NewCodeChanges: commits,
 	}
 
 	c.JSON(http.StatusOK, velocity)
