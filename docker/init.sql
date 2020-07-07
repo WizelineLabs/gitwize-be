@@ -67,7 +67,10 @@ CREATE TABLE pull_request (
     closed_year int,
     closed_month int,
     closed_day int,
-    closed_hour int
+    closed_hour int,
+    additions int,
+    deletions int,
+    review_duration bigint
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
