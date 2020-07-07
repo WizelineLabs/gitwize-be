@@ -2,6 +2,9 @@ version: 2.1
 
 commands:
  deploy_build:
+  parameters:
+    environment:
+      type: string
   steps:
     - run: npm install
     - run:
@@ -15,10 +18,14 @@ commands:
         name: Deploying to Elastic Beanstalk
         command: |
           export EB_ENV=dev-gitwize
-          export PATTERN="v[0-9]+(\.[0-9]+).*"
-          if [[ ${CIRCLE_TAG} =~  ${PATTERN} ]]; then
+          export ENVIRONMENT=<< parameters.environment >>
+          if [[ "${ENVIRONMENT}" == "QA" ]]; then
             export EB_ENV=qa-gitwize
             echo "deploy to QA"
+          fi
+          if [[ "${ENVIRONMENT}" == "PROD" ]]; then
+            export EB_ENV=prod-gitwize
+            echo "deploy to PROD"
           fi
           eb use ${EB_ENV}
           eb deploy
@@ -84,7 +91,8 @@ jobs:
       - image: circleci/node:latest # the primary container, where your job's commands are run
     steps:
       - checkout # check out the code in the project directory
-      - deploy_build
+      - deploy_build:
+          environment: DEV
       - slack/status:
           fail_only: false
           webhook: '${SLACK_WEBHOOK}'
@@ -94,7 +102,18 @@ jobs:
       - image: circleci/node:latest # the primary container, where your job's commands are run
     steps:
       - checkout # check out the code in the project directory
-      - deploy_build
+      - deploy_build:
+          environment: QA
+      - slack/status:
+          fail_only: false
+          webhook: '${SLACK_WEBHOOK}'
+  deploy-prod:
+    docker:
+      - image: circleci/node:latest # the primary container, where your job's commands are run
+    steps:
+      - checkout # check out the code in the project directory
+      - deploy_build:
+          environment: PROD
       - slack/status:
           fail_only: false
           webhook: '${SLACK_WEBHOOK}'
@@ -114,6 +133,23 @@ workflows:
                 - master
                 - /deploy-.*/
       - deploy-qa:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v[0-9]+(\.[0-9]+).*/
+      - approval-deploy-prod: 
+          type: approval 
+          requires:
+            - deploy-qa
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v[0-9]+(\.[0-9]+).*/
+      - deploy-prod:
+          requires:
+            - approval-deploy-prod
           filters:
             branches:
               ignore: /.*/
