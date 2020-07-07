@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-type QuarterlyTrends struct {
-	PercentageRejectedPR map[string]int `json:"percentageRejectedPR"`
-}
-
 func getStatsQuarterlyTrends(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 	userId := extractUserInfo(c)
@@ -57,8 +53,5 @@ func getStatsQuarterlyTrends(c *gin.Context) {
 		return
 	}
 
-	result := QuarterlyTrends{
-		PercentageRejectedPR: quarterlyTrends,
-	}
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, quarterlyTrends)
 }

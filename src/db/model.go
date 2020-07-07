@@ -48,6 +48,7 @@ const (
 	tableContributorFile = "file_stat_data"
 	tableUser            = "repository_user"
 	tableNetChange       = "commit_data"
+	tablePullRequest     = "pull_request"
 )
 
 type Repository struct {
@@ -149,6 +150,12 @@ func (CodeVelocityDBEntity) TableName() string {
 	return tableNetChange
 }
 
+type QuarterlyTrends struct {
+	PercentageRejectedPR map[string]int `json:"percentageRejectedPR"`
+	AveragePRTime        map[string]int `json:"averagePRTime"`
+	AveragePRSize        map[string]int `json:"averagePRSize"`
+}
+
 type RejectedMergedPR struct {
 	Month int `gorm:"column:month"`
 	Value int `gorm:"column:value"`
@@ -156,4 +163,15 @@ type RejectedMergedPR struct {
 
 func (RejectedMergedPR) TableName() string {
 	return tableMetric
+}
+
+type DurationSizePR struct {
+	Month    int `gorm:"column:closed_month"`
+	Addition int `gorm:"column:additions"`
+	Deletion int `gorm:"column:deletions"`
+	Duration int `gorm:"column:review_duration"`
+}
+
+func (DurationSizePR) TableName() string {
+	return tablePullRequest
 }
