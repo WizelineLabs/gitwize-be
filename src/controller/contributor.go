@@ -106,7 +106,6 @@ func getEndDateFromEpoch(epoch int) string {
 func getChartData(dataPerson []db.ContributorStats, dataTotal []db.ContributorStats, numbOfContributor int) map[string][]db.ContributorStats {
 	chartData := map[string][]db.ContributorStats{}
 	dataByDayMap := getStatByDayMap(dataTotal)
-
 	for _, stat := range dataPerson {
 		dataByDay := dataByDayMap[stat.Date]
 		if dataByDay.AdditionLoc+dataByDay.DeletionLoc == 0 {
@@ -154,6 +153,7 @@ type ContributorTableItem struct {
 	Commits     int    `json:"commits"`
 	Additions   int    `json:"additions"`
 	Deletions   int    `json:"deletions"`
+	NetChanges  int    `json:"netChanges"`
 	ActiveDays  int    `json:"activeDays"`
 	FilesChange int    `json:"filesChange"`
 }
@@ -189,6 +189,7 @@ func buildTableItem(data []db.ContributorStats) ContributorTableItem {
 	item.Commits = commits
 	item.Additions = additions
 	item.Deletions = deletions
+	item.NetChanges = additions - deletions
 	item.ActiveDays = activeDays
 	item.FilesChange = fileChanges
 	return item

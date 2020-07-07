@@ -116,13 +116,13 @@ func (Metric) TableName() string {
 
 type ContributorStats struct {
 	RepositoryID int     `gorm:"column:repository_id" json:"repository_id"`
-	Email        string  `gorm:"column:author_email" json:"author_email"`
-	Name         string  `gorm:"column:author_name" json:"author_name"`
+	Email        string  `gorm:"column:author_email" json:"email"`
+	Name         string  `gorm:"column:author_name" json:"name"`
 	Commits      int     `gorm:"column:commits" json:"commits"`
-	AdditionLoc  int     `gorm:"column:addition_loc" json:"addition_loc"`
-	DeletionLoc  int     `gorm:"column:deletion_loc" json:"deletion_loc"`
-	NumFiles     int     `gorm:"column:num_files" json:"num_files"`
-	LOCPercent   float32 `gorm:"column:loc_percent" json:"loc_percent"`
+	AdditionLoc  int     `gorm:"column:addition_loc" json:"additions"`
+	DeletionLoc  int     `gorm:"column:deletion_loc" json:"deletions"`
+	NumFiles     int     `gorm:"column:num_files" json:"filesChange"`
+	LOCPercent   float32 `gorm:"column:loc_percent" json:"changePercent"`
 	Date         string  `gorm:"column:date" json:"date"`
 }
 
@@ -139,12 +139,13 @@ func (Contributor) TableName() string {
 	return tableContributor
 }
 
-type NetChange struct {
-	Month int    `gorm:"column:month"`
-	Value string `gorm:"column:value"`
+type CodeVelocityDBEntity struct {
+	Month      int    `gorm:"column:month"`
+	NetChanges string `gorm:"column:net_changes"`
+	NoCommits  string `gorm:"column:no_commits"`
 }
 
-func (NetChange) TableName() string {
+func (CodeVelocityDBEntity) TableName() string {
 	return tableNetChange
 }
 

@@ -9,8 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type CodeChangeVelocity struct {
-	NetChanges map[string]string `json:"netChanges"`
+type CodeVelocity struct {
+	Commits        map[string]string `json:"commits"`
+	NetChanges     map[string]string `json:"netChanges"`
+	NewCodeChanges map[string]string `json:"newCodeChanges"`
 }
 
 func getCodeChangeVelocity(c *gin.Context) {
@@ -34,7 +36,8 @@ func getCodeChangeVelocity(c *gin.Context) {
 		return
 	}
 
-	netChanges, err := db.GetNetChanges(repoID, time.Unix(int64(from), 0), time.Unix(int64(to), 0))
+	commits, netChanges, err := db.GetCodeVelocity(repoID, time.Unix(int64(from), 0), time.Unix(int64(to), 0))
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, RestErr{
 			ErrKeyUnknownIssue,
@@ -43,8 +46,11 @@ func getCodeChangeVelocity(c *gin.Context) {
 		return
 	}
 
-	velocity := CodeChangeVelocity{
+	velocity := CodeVelocity{
+		Commits:    commits,
 		NetChanges: netChanges,
+		// Fake newCodeChanges
+		NewCodeChanges: commits,
 	}
 
 	c.JSON(http.StatusOK, velocity)

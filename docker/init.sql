@@ -190,6 +190,8 @@ INSERT INTO repository(repo_full_name,name,status,url,access_token,branches,num_
 
 INSERT INTO commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, total_loc, year, month, day, hour, commit_time_stamp)
     VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'test message', '1', '32', '20', '1', '1000', 2020, '6', '20', '0', "2020-06-20 00:00:00");
+INSERT INTO commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, total_loc, year, month, day, hour, commit_time_stamp)
+    VALUES ('1', 'testhash0002', 'test@wizeline.com', 'test', 'test message', '3', '100', '90', '1', '1010', 2020, '6', '20', '2', "2020-06-22 00:00:00");
 
 INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp)
     VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file1', '1', '2', 2020, '6', '20', '0', "2020-06-20 00:00:00");
