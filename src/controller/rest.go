@@ -20,7 +20,9 @@ import (
 
 func extractUserInfo(c *gin.Context) string {
 	userId := c.Request.Header.Get("AuthenticatedUser")
-	if userId == "" {
+	if userId == "" && configuration.CurConfiguration.Auth.AuthDisable == "true" {
+		userId = "tester@wizeline.com"
+	} else if userId == "" {
 		c.JSON(ErrCodeNotAuthenticatedUser, RestErr{
 			ErrorKey:     ErrKeyNotAuthenticatedUser,
 			ErrorMessage: ErrMsgNotAuthenticatedUser})
@@ -70,25 +72,18 @@ func getRepos(c *gin.Context) {
 		return
 	}
 
-	if repo.ID == 0 {
-		c.JSON(ErrCodeEntityNotFound, RestErr{
-			ErrorKey:     ErrKeyEntityNotFound,
-			ErrorMessage: ErrMsgEntityNotFound})
-		return
-	} else {
-		branches := make([]string, 0)
-		if len(repo.Branches) > 0 {
-			branches = strings.Split(repo.Branches, ",")
-		}
-		c.JSON(http.StatusOK, RepoInfoGet{
-			ID:          repo.ID,
-			Name:        repo.Name,
-			Url:         repo.Url,
-			Status:      repo.Status,
-			Branches:    branches,
-			LastUpdated: repo.CtlModifiedDate,
-		})
+	branches := make([]string, 0)
+	if len(repo.Branches) > 0 {
+		branches = strings.Split(repo.Branches, ",")
 	}
+	c.JSON(http.StatusOK, RepoInfoGet{
+		ID:          repo.ID,
+		Name:        repo.Name,
+		Url:         repo.Url,
+		Status:      repo.Status,
+		Branches:    branches,
+		LastUpdated: repo.CtlModifiedDate,
+	})
 }
 
 func getListRepos(c *gin.Context) {
@@ -253,21 +248,14 @@ func delRepos(c *gin.Context) {
 		return
 	}
 
-	if repo.ID == 0 {
-		c.JSON(ErrCodeEntityNotFound, RestErr{
-			ErrorKey:     ErrKeyEntityNotFound,
-			ErrorMessage: ErrMsgEntityNotFound})
+	if err := db.DeleteRepoUser(userId, &repo); err != nil {
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
-	} else {
-		if err := db.DeleteRepoUser(userId, &repo); err != nil {
-			c.JSON(http.StatusInternalServerError, RestErr{
-				ErrKeyUnknownIssue,
-				err.Error(),
-			})
-			return
-		}
-		c.JSON(http.StatusNoContent, nil)
 	}
+	c.JSON(http.StatusNoContent, nil)
 }
 
 func getStats(c *gin.Context) {
@@ -311,42 +299,51 @@ func getStats(c *gin.Context) {
 		return
 	}
 
-	if repo.ID == 0 {
-		c.JSON(ErrCodeEntityNotFound, RestErr{
-			ErrorKey:     ErrKeyEntityNotFound,
-			ErrorMessage: ErrMsgEntityNotFound})
+	result, err := db.GetMetricBaseOnType(idRepository, metricTypeVal, int64(from), int64(to))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
 		return
 	} else {
-		result, err := db.GetMetricBaseOnType(idRepository, metricTypeVal, int64(from), int64(to))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, RestErr{
-				ErrKeyUnknownIssue,
-				err.Error(),
-			})
-			return
-		} else {
-			repositoryDTO := db.RepositoryDTO{
-				ID:      repo.ID,
-				Name:    repo.Name,
-				Status:  repo.Status,
-				Url:     repo.Url,
-				Metrics: result,
-			}
-			c.JSON(http.StatusOK, repositoryDTO)
+		repositoryDTO := db.RepositoryDTO{
+			ID:      repo.ID,
+			Name:    repo.Name,
+			Status:  repo.Status,
+			Url:     repo.Url,
+			Metrics: result,
 		}
+		c.JSON(http.StatusOK, repositoryDTO)
 	}
 }
 
 // authMiddleware checks for valid access token
 func authMiddleware(c *gin.Context) {
-	authDisabled := configuration.CurConfiguration.Auth.AuthDisable == "true"
-	if !authDisabled && !auth.IsAuthorized(nil, c.Request) {
-		c.AbortWithStatusJSON(ErrCodeUnauthorized, RestErr{
-			ErrorKey:     ErrKeyUnauthorized,
-			ErrorMessage: ErrMsgUnauthorized},
-		)
+	if !(configuration.CurConfiguration.Auth.AuthDisable == "true") {
+		authorized, emailUser := auth.IsAuthorized(nil, c.Request)
+		if !authorized {
+			c.AbortWithStatusJSON(ErrCodeUnauthorized, RestErr{
+				ErrorKey:     ErrKeyUnauthorized,
+				ErrorMessage: ErrMsgUnauthorized},
+			)
+		} else {
+			idRepository := c.Param("id")
+			if idRepository != "" {
+				if isBelongTo, err := db.IsRepoBelongToUser(emailUser, idRepository); err != nil {
+					c.JSON(http.StatusInternalServerError, RestErr{
+						ErrKeyUnknownIssue,
+						err.Error(),
+					})
+				} else if !isBelongTo {
+					c.JSON(ErrCodeEntityNotFound, RestErr{
+						ErrorKey:     ErrKeyEntityNotFound,
+						ErrorMessage: ErrMsgEntityNotFound})
+					return
+				}
+			}
+		}
 	}
-
 	c.Next()
 }
 
@@ -381,6 +378,7 @@ func Initialize() *gin.Engine {
 		repoApi.GET(gwRepoStats, getStats)
 		repoApi.GET(gwContributorStats, getContributorStats)
 		repoApi.GET(gwCodeVelocity, getCodeChangeVelocity)
+		repoApi.GET(gwQuarterlyTrend, getStatsQuarterlyTrends)
 	}
 
 	return ginCont

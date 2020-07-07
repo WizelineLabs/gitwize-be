@@ -148,3 +148,12 @@ type CodeVelocityDBEntity struct {
 func (CodeVelocityDBEntity) TableName() string {
 	return tableNetChange
 }
+
+type RejectedMergedPR struct {
+	Month int `gorm:"column:month"`
+	Value int `gorm:"column:value"`
+}
+
+func (RejectedMergedPR) TableName() string {
+	return tableMetric
+}

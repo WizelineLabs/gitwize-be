@@ -14,6 +14,7 @@ const (
 	gwRepoStats          = ":id/stats"
 	gwContributorStats   = ":id/contributor"
 	gwCodeVelocity       = ":id/code-velocity"
+	gwQuarterlyTrend     = ":id/trends"
 )
 
 type AdminOperation int

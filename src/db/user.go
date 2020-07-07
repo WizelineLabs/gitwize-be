@@ -82,6 +82,18 @@ func CreateRepoUser(userEmail string, repo *Repository) error {
 	return nil
 }
 
+func IsRepoBelongToUser(userEmail string, repoId string) (bool, error) {
+	var user User
+	if err := gormDB.Where("user_email = ? AND repository_id = ?", userEmail, repoId).
+		Find(&user).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}
 func IsRepoUserExist(userEmail string, repoFullName string) (bool, error) {
 	var user User
 	if err := gormDB.Where("user_email = ? AND repo_full_name = ?", userEmail, repoFullName).

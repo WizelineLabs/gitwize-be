@@ -7,11 +7,11 @@ import (
 
 type mockJWTVerifier struct{}
 
-func (m mockJWTVerifier) Verify(token string, r *http.Request) bool {
+func (m mockJWTVerifier) Verify(token string, r *http.Request) (bool, string) {
 	if token == "valid-token" {
-		return true
+		return true, ""
 	}
-	return false
+	return false, ""
 }
 
 func Test_Request_Authorized(t *testing.T) {
@@ -21,7 +21,7 @@ func Test_Request_Authorized(t *testing.T) {
 		},
 	}
 	v := mockJWTVerifier{}
-	authorized := IsAuthorized(v, r)
+	authorized, _ := IsAuthorized(v, r)
 	if !authorized {
 		t.Error("Expected authorized!")
 	}
@@ -34,7 +34,7 @@ func Test_Request_UnAuthorized(t *testing.T) {
 		},
 	}
 	v := mockJWTVerifier{}
-	authorized := IsAuthorized(v, r)
+	authorized, _ := IsAuthorized(v, r)
 	if authorized {
 		t.Error("Expected unauthorized!")
 	}
