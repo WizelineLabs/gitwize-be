@@ -108,7 +108,7 @@ func GetQuarterlyTrends(idRepository string, epochFrom int64, epochTo int64) (Qu
 
 	durationSizePRs := make([]DurationSizePR, 0)
 	if err := gormDB.Debug().
-		Select("(closed_month%100) as closed_month, AVG(additions) as additions, AVG(deletions) as deletions, AVG(review_duration) as review_duration").
+		Select("(closed_month%100) as closed_month,FLOOR(AVG(additions)) as additions, FLOOR(AVG(deletions)) as deletions, FLOOR(AVG(review_duration)) as review_duration").
 		Where("repository_id = ? AND state = ? AND closed_hour >= ? AND closed_hour <= ? ", idRepository, "merged", from, to).
 		Group("closed_year, closed_month").
 		Order("closed_year, closed_month").
