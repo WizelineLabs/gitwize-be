@@ -148,8 +148,11 @@ func (NetChange) TableName() string {
 	return tableNetChange
 }
 
-type QuarterlyTrends struct {
-	AveragePRTime        map[string]int `json:"averagePRTime"`
-	PercentageRejectedPR map[string]int `json:"percentageRejectedPR"`
-	AveragePRSize        map[string]int `json:"averagePRSize"`
+type RejectedMergedPR struct {
+	Month int `gorm:"column:month"`
+	Value int `gorm:"column:value"`
+}
+
+func (RejectedMergedPR) TableName() string {
+	return tableMetric
 }

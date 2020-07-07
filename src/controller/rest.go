@@ -318,74 +318,29 @@ func getStats(c *gin.Context) {
 	}
 }
 
-func getStatsQuarterlyTrends(c *gin.Context) {
-	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
-	userId := extractUserInfo(c)
-	if userId == "" {
-		return
-	}
-	idRepository := c.Param("id")
-
-	from, err := strconv.Atoi(c.Query("date_from"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
-		return
-	}
-
-	to, err := strconv.Atoi(c.Query("date_to"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
-		return
-	}
-
-	repo := db.Repository{}
-	if err := db.GetOneRepoUser(userId, idRepository, &repo); err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
-		return
-	}
-
-	quarterlyTrends, err := db.GetQuarterlyTrends(idRepository, int64(from), int64(to))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, quarterlyTrends)
-}
-
 // authMiddleware checks for valid access token
 func authMiddleware(c *gin.Context) {
-	authDisabled := configuration.CurConfiguration.Auth.AuthDisable == "true"
-	idRepository := c.Param("id")
-	authorized, emailUser := auth.IsAuthorized(nil, c.Request)
-	if !authDisabled && !authorized {
-		c.AbortWithStatusJSON(ErrCodeUnauthorized, RestErr{
-			ErrorKey:     ErrKeyUnauthorized,
-			ErrorMessage: ErrMsgUnauthorized},
-		)
-	} else {
-		if idRepository != "" {
-			if isBelongTo, err := db.IsRepoBelongToUser(emailUser, idRepository); err != nil {
-				c.JSON(http.StatusInternalServerError, RestErr{
-					ErrKeyUnknownIssue,
-					err.Error(),
-				})
-			} else if !isBelongTo {
-				c.JSON(ErrCodeEntityNotFound, RestErr{
-					ErrorKey:     ErrKeyEntityNotFound,
-					ErrorMessage: ErrMsgEntityNotFound})
-				return
+	if !(configuration.CurConfiguration.Auth.AuthDisable == "true") {
+		authorized, emailUser := auth.IsAuthorized(nil, c.Request)
+		if !authorized {
+			c.AbortWithStatusJSON(ErrCodeUnauthorized, RestErr{
+				ErrorKey:     ErrKeyUnauthorized,
+				ErrorMessage: ErrMsgUnauthorized},
+			)
+		} else {
+			idRepository := c.Param("id")
+			if idRepository != "" {
+				if isBelongTo, err := db.IsRepoBelongToUser(emailUser, idRepository); err != nil {
+					c.JSON(http.StatusInternalServerError, RestErr{
+						ErrKeyUnknownIssue,
+						err.Error(),
+					})
+				} else if !isBelongTo {
+					c.JSON(ErrCodeEntityNotFound, RestErr{
+						ErrorKey:     ErrKeyEntityNotFound,
+						ErrorMessage: ErrMsgEntityNotFound})
+					return
+				}
 			}
 		}
 	}
