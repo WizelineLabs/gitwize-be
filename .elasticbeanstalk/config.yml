@@ -1,0 +1,23 @@
+branch-defaults:
+  deploy-allow-all-cors:
+    environment: dev-gitwize
+  deploy-beanstalk:
+    environment: dev-gitwize
+    group_suffix: null
+  deploy-qa:
+    environment: qa-gitwize
+  feature/adding-ci-build:
+    environment: dev-gitwize
+global:
+  application_name: gitwize
+  branch: null
+  default_ec2_keyname: aws-gitwize-be-key
+  default_platform: Go 1 running on 64bit Amazon Linux 2
+  default_region: ap-southeast-1
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  repository: null
+  sc: git
+  workspace_type: Application
