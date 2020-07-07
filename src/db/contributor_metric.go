@@ -11,7 +11,7 @@ func GetContributorStatsByPerson(id string, since string, until string) ([]Contr
 		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ?", id, since, until).
 		Select(
 			"repository_id, " +
-				"author_email, " +
+				"LOWER(author_email) as author_email, " +
 				"COUNT(*) as commits, " +
 				"CONCAT_WS(\", \", author_name) as author_name, " +
 				"SUM(addition_loc) as addition_loc, " +
@@ -56,7 +56,7 @@ func GetListContributors(id string, since string, until string) ([]Contributor, 
 	contributors := make([]Contributor, 0)
 	err := gormDB.
 		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ?", id, since, until).
-		Select("distinct(author_email) as author_email, CONCAT_WS(\", \", author_name) as author_name").
+		Select("DISTINCT(LOWER(author_email)) as author_email, CONCAT_WS(\", \", author_name) as author_name").
 		Group("author_email").Order("author_name").Find(&contributors).Error
 	if err != nil {
 		if !gorm.IsRecordNotFoundError(err) {
