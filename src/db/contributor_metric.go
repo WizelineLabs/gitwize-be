@@ -8,7 +8,7 @@ func GetContributorStatsByPerson(id string, since string, until string) ([]Contr
 	contributorStats := make([]ContributorStats, 0)
 
 	err := gormDB.
-		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ?", id, since, until).
+		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ? AND num_parents=1", id, since, until).
 		Select(
 			"repository_id, " +
 				"LOWER(author_email) as author_email, " +
@@ -33,7 +33,7 @@ func GetContributorStatsByPerson(id string, since string, until string) ([]Contr
 func GetTotalContributorStats(id string, since string, until string) ([]ContributorStats, error) {
 	contributorStats := make([]ContributorStats, 0)
 	err := gormDB.
-		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ?", id, since, until).
+		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ? AND num_parents=1", id, since, until).
 		Select(
 			"repository_id, " +
 				"COUNT(*) as commits, " +
@@ -55,7 +55,7 @@ func GetTotalContributorStats(id string, since string, until string) ([]Contribu
 func GetListContributors(id string, since string, until string) ([]Contributor, error) {
 	contributors := make([]Contributor, 0)
 	err := gormDB.
-		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ?", id, since, until).
+		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ? AND num_parents=1", id, since, until).
 		Select("DISTINCT(LOWER(author_email)) as author_email, CONCAT_WS(\", \", author_name) as author_name").
 		Group("author_email").Order("author_name").Find(&contributors).Error
 	if err != nil {
