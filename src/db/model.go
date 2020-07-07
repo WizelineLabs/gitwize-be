@@ -139,11 +139,12 @@ func (Contributor) TableName() string {
 	return tableContributor
 }
 
-type NetChange struct {
-	Month int    `gorm:"column:month"`
-	Value string `gorm:"column:value"`
+type CodeVelocityDBEntity struct {
+	Month      int    `gorm:"column:month"`
+	NetChanges string `gorm:"column:net_changes"`
+	NoCommits  string `gorm:"column:no_commits"`
 }
 
-func (NetChange) TableName() string {
+func (CodeVelocityDBEntity) TableName() string {
 	return tableNetChange
 }
