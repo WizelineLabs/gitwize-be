@@ -70,7 +70,8 @@ CREATE TABLE pull_request (
     closed_hour int,
     additions int,
     deletions int,
-    review_duration bigint
+    review_duration bigint,
+    UNIQUE KEY pr_repo_no_idx (repository_id, pr_no)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
