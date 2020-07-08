@@ -163,7 +163,8 @@ func postRepos(c *gin.Context) {
 	}
 
 	if branches, err = githubapi.GetListBranches(owner, repoName, reqInfo.AccessToken); err != nil {
-		if strings.Contains(err.Error(), "Bad credentials") {
+		if strings.Contains(err.Error(), "Bad credentials") ||
+			strings.Contains(err.Error(), "Resource protected by organization SAML") {
 			c.JSON(ErrCodeRepoBadCredential, RestErr{
 				ErrKeyRepoBadCredential,
 				ErrMsgRepoBadCredential,
