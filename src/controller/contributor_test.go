@@ -20,7 +20,6 @@ func TestGetContributorStats(t *testing.T) {
 		"&date_to="+strconv.FormatInt(to, 10),
 		nil, header{Key: "AuthenticatedUser", Value: "tester@wizeline.com"})
 	assert.Equal(t, http.StatusOK, w.Code)
-
 	expectedResult := "{\"repository_id\":\\d+," +
 		"\"email\":\".*\"," +
 		"\"name\":\".*\"," +
