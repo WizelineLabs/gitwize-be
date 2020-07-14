@@ -4,80 +4,42 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitwize-be/src/db"
 	"net/http"
-	"strconv"
-	"time"
 )
 
+//ContributorAPIData data struct for contributor api response
 type ContributorAPIData struct {
 	Table        []ContributorTableItem           `json:"table"`
 	Chart        map[string][]db.ContributorStats `json:"chart"`
 	Contributors []db.Contributor                 `json:"contributors"`
 }
 
-const AVERAGE = "average"
+const average = "average"
 
 func getContributorStats(c *gin.Context) {
-	userId := extractUserInfo(c)
 	repoID := c.Param("id")
 
-	from, err := strconv.Atoi(c.Query("date_from"))
+	if !validateRepoUser(c, repoID) {
+		return
+	}
+
+	values, err := getIntParams(c, "date_from", "date_to")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
 		return
 	}
-
-	to, err := strconv.Atoi(c.Query("date_to"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
-		return
-	}
-
-	repo := db.Repository{}
-	if err := db.GetOneRepoUser(userId, repoID, &repo); err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
-		return
-	}
-
-	if repo.ID == 0 {
-		c.JSON(ErrCodeEntityNotFound, RestErr{
-			ErrorKey:     ErrKeyEntityNotFound,
-			ErrorMessage: ErrMsgEntityNotFound})
-		return
-	}
+	from, to := values[0], values[1]
 
 	dataByPerson, err := db.GetContributorStatsByPerson(repoID, getStartDateFromEpoch(from), getEndDateFromEpoch(to))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
+	if hasErrUnknown(c, err) {
 		return
 	}
 
 	dataTotal, err := db.GetTotalContributorStats(repoID, getStartDateFromEpoch(from), getEndDateFromEpoch(to))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
+	if hasErrUnknown(c, err) {
 		return
 	}
 
 	contributorList, err := db.GetListContributors(repoID, getStartDateFromEpoch(from), getEndDateFromEpoch(to))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
+	if hasErrUnknown(c, err) {
 		return
 	}
 
@@ -90,17 +52,6 @@ func getContributorStats(c *gin.Context) {
 
 	c.JSON(http.StatusOK, contributorData)
 	return
-}
-
-func getStartDateFromEpoch(epoch int) string {
-	dateFrom := time.Unix(int64(epoch), 0)
-	yearFrom, monthFrom, dayFrom := dateFrom.Year(), int(dateFrom.Month()), dateFrom.Day()
-	return strconv.Itoa(yearFrom) + "-" + strconv.Itoa(monthFrom) + "-" + strconv.Itoa(dayFrom)
-}
-
-func getEndDateFromEpoch(epoch int) string {
-	oneDay := 60 * 60 * 24
-	return getStartDateFromEpoch(epoch + oneDay)
 }
 
 func getChartData(dataPerson []db.ContributorStats, dataTotal []db.ContributorStats, numbOfContributor int) map[string][]db.ContributorStats {
@@ -117,7 +68,7 @@ func getChartData(dataPerson []db.ContributorStats, dataTotal []db.ContributorSt
 		items = append(items, stat)
 		chartData[stat.Email] = items
 	}
-	chartData[AVERAGE] = getAverageStatByDay(dataTotal, numbOfContributor)
+	chartData[average] = getAverageStatByDay(dataTotal, numbOfContributor)
 	return chartData
 }
 
@@ -161,7 +112,7 @@ type ContributorTableItem struct {
 func getTableData(dataMap map[string][]db.ContributorStats) []ContributorTableItem {
 	result := []ContributorTableItem{}
 	for email, contributorData := range dataMap {
-		if email == AVERAGE {
+		if email == average {
 			continue
 		} else {
 			tableItem := buildTableItem(contributorData)
