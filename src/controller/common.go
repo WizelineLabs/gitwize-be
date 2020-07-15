@@ -98,7 +98,7 @@ func getIntParams(c *gin.Context, params ...string) ([]int, error) {
 				ErrKeyUnknownIssue,
 				err.Error(),
 			})
-			return values, err
+			return nil, err
 		}
 		values[i] = value
 	}
