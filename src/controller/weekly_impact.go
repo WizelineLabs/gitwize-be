@@ -9,28 +9,45 @@ import (
 /*
 spec https://wizeline.atlassian.net/wiki/spaces/GWZ/pages/1424393330/API+spec+-+Weekly+Impact
 {
+    "period": {
+      date_from: "2020-06-29",
+      date_to: "2020-07-05"
+    }
     "impactScore": {
       "currentPeriod": 184,
-      "previousPeriod": 10,
+      "previousPeriod": 10
     },
     "activeDays": {
       "currentPeriod": 15,
-      "previousPeriod": 12,
+      "previousPeriod": 12
     },
     "commitsPerDay": {
       "currentPeriod": 13.5,
-      "previousPeriod": 11.2,
+      "previousPeriod": 11.2
     },
     "mostChurnedFile": {
-      "fileName": "abc.js"
+      "fileName": "abc.js",
       "value": 30
     }
 }
+
 */
 
+type Period struct {
+	DateFrom string `json:"date_from"`
+	DateTo   string `json:"date_to"`
+}
+
+func getPeriod(from, to time.Time) Period {
+	return Period{
+		DateFrom: from.Format("2006-01-02"),
+		DateTo:   to.Format("2006-01-02"),
+	}
+}
+
 type ImpactMetric struct {
-	CurrentPeriod  float32 `json:"currentPeriod"`
-	PreviousPeriod float32 `json:"previousPeriod"`
+	CurrentPeriod  float64 `json:"currentPeriod"`
+	PreviousPeriod float64 `json:"previousPeriod"`
 }
 
 type ChurnMetric struct {
@@ -39,15 +56,11 @@ type ChurnMetric struct {
 }
 
 type WeeklyImpactData struct {
+	ImpactPeriod    Period       `json:"period"`
 	ImpactScore     ImpactMetric `json:"impactScore"`
 	ActiveDays      ImpactMetric `json:"activeDays"`
 	CommitsPerDay   ImpactMetric `json:"commitsPerDay"`
 	MostChurnedFile ChurnMetric  `json:"mostChurnedFile"`
-}
-
-type duration struct {
-	from time.Time
-	to   time.Time
 }
 
 func getWeeklyImpact(c *gin.Context) {
@@ -57,42 +70,43 @@ func getWeeklyImpact(c *gin.Context) {
 	}
 
 	current := time.Now()
-	lastMonday, lastSunday := getWeekRange(current.AddDate(0, 0, -7))
-	previousMonday, previousSunday := getWeekRange(current.AddDate(0, 0, -14))
+	lastWeek := getPeriod(getWeekRange(current.AddDate(0, 0, -7)))
+	previousLastWeek := getPeriod(getWeekRange(current.AddDate(0, 0, -14)))
 
 	weeklyData := WeeklyImpactData{
-		ImpactScore:     getImpactScore(repoID, duration{lastMonday, lastSunday}, duration{previousMonday, previousSunday}),
-		ActiveDays:      getActiveDays(repoID, duration{lastMonday, lastSunday}, duration{previousMonday, previousSunday}),
-		CommitsPerDay:   getCommitsPerDay(repoID, duration{lastMonday, lastSunday}, duration{previousMonday, previousSunday}),
-		MostChurnedFile: getMostChurnedFile(repoID, duration{lastMonday, lastSunday}),
+		ImpactPeriod:    lastWeek,
+		ImpactScore:     getImpactScore(repoID, lastWeek, previousLastWeek),
+		ActiveDays:      getActiveDays(repoID, lastWeek, previousLastWeek),
+		CommitsPerDay:   getCommitsPerDay(repoID, lastWeek, previousLastWeek),
+		MostChurnedFile: getMostChurnedFile(repoID, lastWeek),
 	}
 
 	c.JSON(http.StatusOK, weeklyData)
 	return
 }
 
-func getImpactScore(repoID string, lastWeek, previousWeek duration) ImpactMetric {
+func getImpactScore(repoID string, lastWeek, previousWeek Period) ImpactMetric {
 	return ImpactMetric{
 		CurrentPeriod:  184,
 		PreviousPeriod: 10,
 	}
 }
 
-func getActiveDays(repoID string, lastWeek, previousWeek duration) ImpactMetric {
+func getActiveDays(repoID string, lastWeek, previousWeek Period) ImpactMetric {
 	return ImpactMetric{
 		CurrentPeriod:  10,
 		PreviousPeriod: 7,
 	}
 }
 
-func getCommitsPerDay(repoID string, lastWeek, prevWeek duration) ImpactMetric {
+func getCommitsPerDay(repoID string, lastWeek, previousWeek Period) ImpactMetric {
 	return ImpactMetric{
 		CurrentPeriod:  12.4,
 		PreviousPeriod: 7.9,
 	}
 }
 
-func getMostChurnedFile(repoID string, lastWeek duration) ChurnMetric {
+func getMostChurnedFile(repoID string, lastWeek Period) ChurnMetric {
 	return ChurnMetric{
 		FileName: "example-file",
 		Value:    120,

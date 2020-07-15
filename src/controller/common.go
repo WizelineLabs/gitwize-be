@@ -16,7 +16,7 @@ const (
 	gwRepoPost           = gwEndPointRepository
 	gwRepoStats          = ":id/stats"
 	gwContributorStats   = ":id/contributor"
-	gwWeeklyImpact       = ":id/weekly-impact"
+	gwWeeklyImpact       = ":id/impact/weekly"
 	gwCodeVelocity       = ":id/code-velocity"
 	gwQuarterlyTrend     = ":id/trends"
 )
