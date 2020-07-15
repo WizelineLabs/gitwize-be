@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 /*
@@ -44,51 +45,54 @@ type WeeklyImpactData struct {
 	MostChurnedFile ChurnMetric  `json:"mostChurnedFile"`
 }
 
+type duration struct {
+	from time.Time
+	to   time.Time
+}
+
 func getWeeklyImpact(c *gin.Context) {
 	repoID := c.Param("id")
 	if !validateRepoUser(c, repoID) {
 		return
 	}
 
-	values, err := getIntParams(c, "date_from", "date_to")
-	if err != nil {
-		return
-	}
-	from, to := values[0], values[1]
+	current := time.Now()
+	lastMonday, lastSunday := getWeekRange(current.AddDate(0, 0, -7))
+	previousMonday, previousSunday := getWeekRange(current.AddDate(0, 0, -14))
 
 	weeklyData := WeeklyImpactData{
-		ImpactScore:     getImpactScore(repoID, from, to),
-		ActiveDays:      getActiveDays(repoID, from, to),
-		CommitsPerDay:   getCommitsPerDay(repoID, from, to),
-		MostChurnedFile: getMostChurnedFile(repoID, from, to),
+		ImpactScore:     getImpactScore(repoID, duration{lastMonday, lastSunday}, duration{previousMonday, previousSunday}),
+		ActiveDays:      getActiveDays(repoID, duration{lastMonday, lastSunday}, duration{previousMonday, previousSunday}),
+		CommitsPerDay:   getCommitsPerDay(repoID, duration{lastMonday, lastSunday}, duration{previousMonday, previousSunday}),
+		MostChurnedFile: getMostChurnedFile(repoID, duration{lastMonday, lastSunday}),
 	}
 
 	c.JSON(http.StatusOK, weeklyData)
 	return
 }
 
-func getImpactScore(repoID string, from, to int) ImpactMetric {
+func getImpactScore(repoID string, lastWeek, previousWeek duration) ImpactMetric {
 	return ImpactMetric{
 		CurrentPeriod:  184,
 		PreviousPeriod: 10,
 	}
 }
 
-func getActiveDays(repoID string, from, to int) ImpactMetric {
+func getActiveDays(repoID string, lastWeek, previousWeek duration) ImpactMetric {
 	return ImpactMetric{
 		CurrentPeriod:  10,
 		PreviousPeriod: 7,
 	}
 }
 
-func getCommitsPerDay(repoID string, from, to int) ImpactMetric {
+func getCommitsPerDay(repoID string, lastWeek, prevWeek duration) ImpactMetric {
 	return ImpactMetric{
 		CurrentPeriod:  12.4,
 		PreviousPeriod: 7.9,
 	}
 }
 
-func getMostChurnedFile(repoID string, from, to int) ChurnMetric {
+func getMostChurnedFile(repoID string, lastWeek duration) ChurnMetric {
 	return ChurnMetric{
 		FileName: "example-file",
 		Value:    120,

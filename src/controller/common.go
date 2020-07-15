@@ -145,3 +145,9 @@ func getEndDateFromEpoch(epoch int) string {
 	oneDay := 60 * 60 * 24
 	return getStartDateFromEpoch(epoch + oneDay)
 }
+
+func getWeekRange(t time.Time) (monday, sunday time.Time) {
+	monday = t.AddDate(0, 0, -int(t.Weekday())+1)
+	sunday = monday.AddDate(0, 0, 6)
+	return monday, sunday
+}
