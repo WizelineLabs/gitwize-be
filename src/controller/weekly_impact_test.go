@@ -19,10 +19,10 @@ func TestGetWeeklyImpact(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestGetWeeklyImpactBadRequest(t *testing.T) {
+func TestGetWeeklyImpactNotFound(t *testing.T) {
 	configuration.CurConfiguration.Auth.AuthDisable = "true"
 	w := performRequest(router, http.MethodGet, gwEndPointRepository+
-		strconv.Itoa(1)+"/weekly-impact?date_from=abc&date_to=xyz",
+		strconv.Itoa(9999)+"/weekly-impact",
 		nil, header{Key: "AuthenticatedUser", Value: "tester@wizeline.com"})
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }
