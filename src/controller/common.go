@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"github.com/gin-gonic/gin"
+	"gitwize-be/src/db"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -13,6 +16,7 @@ const (
 	gwRepoPost           = gwEndPointRepository
 	gwRepoStats          = ":id/stats"
 	gwContributorStats   = ":id/contributor"
+	gwWeeklyImpact       = ":id/impact/weekly"
 	gwCodeVelocity       = ":id/code-velocity"
 	gwQuarterlyTrend     = ":id/trends"
 )
@@ -83,4 +87,67 @@ type RepoInfoGet struct {
 	Status      string    `json:"status"  binding:"required"`
 	Branches    []string  `json:"branches" binding:"required"`
 	LastUpdated time.Time `json:"last_updated" binding:"required"`
+}
+
+func getIntParams(c *gin.Context, params ...string) ([]int, error) {
+	values := make([]int, len(params))
+	for i, param := range params {
+		value, err := strconv.Atoi(c.Query(param))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, RestErr{
+				ErrKeyUnknownIssue,
+				err.Error(),
+			})
+			return nil, err
+		}
+		values[i] = value
+	}
+	return values, nil
+}
+
+func validateRepoUser(c *gin.Context, repoID string) bool {
+	userID := extractUserInfo(c)
+	repo := db.Repository{}
+	if err := db.GetOneRepoUser(userID, repoID, &repo); err != nil {
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
+		return false
+	}
+	if repo.ID == 0 {
+		c.JSON(ErrCodeEntityNotFound, RestErr{
+			ErrorKey:     ErrKeyEntityNotFound,
+			ErrorMessage: ErrMsgEntityNotFound})
+		return false
+	}
+	return true
+}
+
+func hasErrUnknown(c *gin.Context, err error) bool {
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, RestErr{
+			ErrKeyUnknownIssue,
+			err.Error(),
+		})
+		return true
+	}
+	return false
+}
+
+func getStartDateFromEpoch(epoch int) string {
+	dateFrom := time.Unix(int64(epoch), 0)
+	yearFrom, monthFrom, dayFrom := dateFrom.Year(), int(dateFrom.Month()), dateFrom.Day()
+	return strconv.Itoa(yearFrom) + "-" + strconv.Itoa(monthFrom) + "-" + strconv.Itoa(dayFrom)
+}
+
+func getEndDateFromEpoch(epoch int) string {
+	oneDay := 60 * 60 * 24
+	return getStartDateFromEpoch(epoch + oneDay)
+}
+
+func getWeekRange(t time.Time) (monday, sunday time.Time) {
+	monday = t.AddDate(0, 0, -int(t.Weekday())+1)
+	sunday = monday.AddDate(0, 0, 6)
+	return monday, sunday
 }
