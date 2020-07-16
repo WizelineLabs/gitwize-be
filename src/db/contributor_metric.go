@@ -1,9 +1,12 @@
 package db
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+	"time"
+)
 
 //GetContributorStatsByPerson get statistics by contributor
-func GetContributorStatsByPerson(id string, since string, until string) ([]ContributorStats, error) {
+func GetContributorStatsByPerson(id string, since, until time.Time) ([]ContributorStats, error) {
 
 	contributorStats := make([]ContributorStats, 0)
 
@@ -30,7 +33,7 @@ func GetContributorStatsByPerson(id string, since string, until string) ([]Contr
 }
 
 //GetTotalContributorStats get statistics for repo group by day
-func GetTotalContributorStats(id string, since string, until string) ([]ContributorStats, error) {
+func GetTotalContributorStats(id string, since, until time.Time) ([]ContributorStats, error) {
 	contributorStats := make([]ContributorStats, 0)
 	err := gormDB.
 		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ? AND num_parents=1", id, since, until).
@@ -52,7 +55,7 @@ func GetTotalContributorStats(id string, since string, until string) ([]Contribu
 }
 
 // GetListContributors get list contributor email and name, name will be concatnate for same email
-func GetListContributors(id string, since string, until string) ([]Contributor, error) {
+func GetListContributors(id string, since, until time.Time) ([]Contributor, error) {
 	contributors := make([]Contributor, 0)
 	err := gormDB.
 		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ? AND num_parents=1", id, since, until).

@@ -135,19 +135,14 @@ func hasErrUnknown(c *gin.Context, err error) bool {
 	return false
 }
 
-func getStartDateFromEpoch(epoch int) string {
-	dateFrom := time.Unix(int64(epoch), 0)
-	yearFrom, monthFrom, dayFrom := dateFrom.Year(), int(dateFrom.Month()), dateFrom.Day()
-	return strconv.Itoa(yearFrom) + "-" + strconv.Itoa(monthFrom) + "-" + strconv.Itoa(dayFrom)
+type TimeRange struct {
+	from time.Time
+	to   time.Time
 }
 
-func getEndDateFromEpoch(epoch int) string {
-	oneDay := 60 * 60 * 24
-	return getStartDateFromEpoch(epoch + oneDay)
-}
-
-func getWeekRange(t time.Time) (monday, sunday time.Time) {
-	monday = t.AddDate(0, 0, -int(t.Weekday())+1)
-	sunday = monday.AddDate(0, 0, 6)
-	return monday, sunday
+func getWeekRange(t time.Time) TimeRange {
+	monday := t.AddDate(0, 0, -int(t.Weekday())+1)
+	begin := monday.Truncate(24 * time.Hour)
+	end := begin.Add(7*24*time.Hour - 1*time.Microsecond)
+	return TimeRange{begin, end}
 }
