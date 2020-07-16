@@ -1,0 +1,2 @@
+ALTER TABLE file_stat_data
+DROP COLUMN modification_loc
