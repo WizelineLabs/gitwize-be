@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitwize-be/src/db"
 	"net/http"
+	"time"
 )
 
 //ContributorAPIData data struct for contributor api response
@@ -28,17 +29,17 @@ func getContributorStats(c *gin.Context) {
 	}
 	from, to := values[0], values[1]
 
-	dataByPerson, err := db.GetContributorStatsByPerson(repoID, getStartDateFromEpoch(from), getEndDateFromEpoch(to))
+	dataByPerson, err := db.GetContributorStatsByPerson(repoID, time.Unix(int64(from), 0), time.Unix(int64(to), 0))
 	if hasErrUnknown(c, err) {
 		return
 	}
 
-	dataTotal, err := db.GetTotalContributorStats(repoID, getStartDateFromEpoch(from), getEndDateFromEpoch(to))
+	dataTotal, err := db.GetTotalContributorStats(repoID, time.Unix(int64(from), 0), time.Unix(int64(to), 0))
 	if hasErrUnknown(c, err) {
 		return
 	}
 
-	contributorList, err := db.GetListContributors(repoID, getStartDateFromEpoch(from), getEndDateFromEpoch(to))
+	contributorList, err := db.GetListContributors(repoID, time.Unix(int64(from), 0), time.Unix(int64(to), 0))
 	if hasErrUnknown(c, err) {
 		return
 	}
