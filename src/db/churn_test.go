@@ -9,6 +9,7 @@ import (
 )
 
 const LocalDBConnString = "gitwize_user:P@ssword123@(localhost:3306)/gitwize?parseTime=true&loc=Local"
+const InvalidLocalDBConnString = "invalid:P@ssword123@(localhost:3306)/gitwize?parseTime=true&loc=Local"
 
 func TestGetFileChurn(t *testing.T) {
 	gormDB, _ = gorm.Open("mysql", LocalDBConnString) // need to init gormDB again
@@ -23,5 +24,14 @@ func TestGetFileChurn(t *testing.T) {
 	log.Println("data", from, to, data)
 	assert.Equal(t, data[0].FileName, "file1")
 	assert.Equal(t, data[0].Value, 1)
+	gormDB.Close()
+}
+
+func TestGetFileChurnErr(t *testing.T) {
+	gormDB, _ = gorm.Open("mysql", InvalidLocalDBConnString) // need to init gormDB again
+	from, _ := time.Parse("2006-01-02", "2020-06-19")
+	to, _ := time.Parse("2006-01-02", "2020-06-21")
+	_, err := GetFileChurn("1", from, to)
+	assert.NotEmpty(t, err)
 	gormDB.Close()
 }
