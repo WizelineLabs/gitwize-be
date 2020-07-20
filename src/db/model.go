@@ -51,6 +51,7 @@ const (
 	tablePullRequest     = "pull_request"
 	tableFileChurn       = "file_stat_data"
 	tableCommitDuration  = "commit_data"
+	tableModification    = "file_stat_data"
 )
 
 type Repository struct {
@@ -190,8 +191,19 @@ func (FileChurn) TableName() string {
 type DurationStat struct {
 	ActiveDays   int `gorm:"column:active_days"`
 	TotalCommits int `gorm:"column:total_commits"`
+	NumFiles     int `gorm:"column:num_files"`
+	Addtions     int `gorm:"column:additions"`
+	Deletions    int `gorm:"column:deletions"`
 }
 
 func (DurationStat) TableName() string {
 	return tableCommitDuration
+}
+
+type ModificationStat struct {
+	Modifications int `gorm:"column:modifications"`
+}
+
+func (ModificationStat) TableName() string {
+	return tableModification
 }

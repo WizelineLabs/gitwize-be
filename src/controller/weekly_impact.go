@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"gitwize-be/src/db"
+	"math"
 	"net/http"
 	"time"
 )
@@ -87,9 +88,19 @@ func getWeeklyImpact(c *gin.Context) {
 		return
 	}
 
+	currentModification, err := db.GetModificationStat(repoID, currentDuration.from, currentDuration.to)
+	if hasErrUnknown(c, err) {
+		return
+	}
+
+	prevModification, err := db.GetModificationStat(repoID, prevDuration.from, prevDuration.to)
+	if hasErrUnknown(c, err) {
+		return
+	}
+
 	weeklyData := WeeklyImpactData{
 		ImpactPeriod:     getDatePeriod(currentDuration),
-		ImpactScore:      getImpactScore(currentStat, prevStat),
+		ImpactScore:      getImpactScore(currentStat, prevStat, currentModification, prevModification),
 		ActiveDays:       getActiveDays(currentStat, prevStat),
 		CommitsPerDay:    getCommitsPerDay(currentStat, prevStat),
 		MostChurnedFiles: mostChurnedFiles,
@@ -99,11 +110,22 @@ func getWeeklyImpact(c *gin.Context) {
 	return
 }
 
-func getImpactScore(currentStat, prevStat db.DurationStat) ImpactMetric {
+func getImpactScore(currentStat, prevStat db.DurationStat, currentModification, prevModification db.ModificationStat) ImpactMetric {
 	return ImpactMetric{
-		CurrentPeriod:  184,
-		PreviousPeriod: 10,
+		CurrentPeriod:  getImpactScoreForPeriod(currentStat, currentModification),
+		PreviousPeriod: getImpactScoreForPeriod(prevStat, prevModification),
 	}
+}
+
+// Impact = (5 * numFilesChanged) + (5 * numeditLocation) + (numPercentageNewcode/10) + (netChange/10)
+func getImpactScoreForPeriod(durationStat db.DurationStat, modificationStat db.ModificationStat) float64 {
+	numeditLocation := 0
+	numPercentageNewcode := 0.0
+	if durationStat.Addtions != 0 {
+		numPercentageNewcode = float64(modificationStat.Modifications) * 100 / float64(durationStat.Addtions)
+	}
+	impact := 5*float64(durationStat.NumFiles) + 5*float64(numeditLocation) + numPercentageNewcode/10 + float64(durationStat.Addtions-durationStat.Deletions)/10
+	return math.Round(impact)
 }
 
 func getActiveDays(currentStat, prevStat db.DurationStat) ImpactMetric {

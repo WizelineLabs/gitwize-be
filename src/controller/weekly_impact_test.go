@@ -36,8 +36,6 @@ func TestGetWeeklyImpact(t *testing.T) {
 	assert.NotNil(t, resp.ActiveDays)
 	assert.NotNil(t, resp.CommitsPerDay)
 	assert.NotNil(t, resp.MostChurnedFiles)
-	assert.Equal(t, float64(184), resp.ImpactScore["currentPeriod"])
-	assert.Equal(t, float64(10), resp.ImpactScore["previousPeriod"])
 }
 
 func TestGetWeeklyImpactNotFound(t *testing.T) {
