@@ -139,6 +139,7 @@ func postRepos(c *gin.Context) {
 		return
 	}
 
+	reqInfo.Url = strings.Replace(reqInfo.Url, "git@github.com:", "https://github.com/", 1)
 	if owner, repoName, err = githubapi.ParseGithubUrl(reqInfo.Url); err != nil {
 		c.JSON(ErrCodeRepoInvalidUrl, RestErr{
 			ErrKeyRepoInvalidUrl,
@@ -378,6 +379,7 @@ func Initialize() *gin.Engine {
 		repoApi.DELETE(gwRepoGetPutDel, delRepos)
 		repoApi.GET(gwRepoStats, getStats)
 		repoApi.GET(gwContributorStats, getContributorStats)
+		repoApi.GET(gwWeeklyImpact, getWeeklyImpact)
 		repoApi.GET(gwCodeVelocity, getCodeChangeVelocity)
 		repoApi.GET(gwQuarterlyTrend, getStatsQuarterlyTrends)
 	}

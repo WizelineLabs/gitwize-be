@@ -49,6 +49,7 @@ const (
 	tableUser            = "repository_user"
 	tableNetChange       = "commit_data"
 	tablePullRequest     = "pull_request"
+	tableFileChurn       = "file_stat_data"
 )
 
 type Repository struct {
@@ -174,4 +175,13 @@ type DurationSizePR struct {
 
 func (DurationSizePR) TableName() string {
 	return tablePullRequest
+}
+
+type FileChurn struct {
+	FileName string `gorm:"column:file_name" json:"fileName"`
+	Value    int    `gorm:"column:count" json:"value"`
+}
+
+func (FileChurn) TableName() string {
+	return tableFileChurn
 }
