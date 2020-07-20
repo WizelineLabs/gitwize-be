@@ -113,6 +113,7 @@ CREATE TABLE file_stat_data (
   day tinyint(1) NOT NULL,
   hour tinyint(1) NOT NULL,
   commit_time_stamp timestamp NULL,
+  modification_loc int(11) DEFAULT NULL,
   PRIMARY KEY (repository_id,hash,file_name)
 )
 ENGINE=InnoDB
@@ -197,10 +198,10 @@ INSERT INTO commit_data (repository_id, hash, author_email, author_name, message
 INSERT INTO commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, total_loc, year, month, day, hour, commit_time_stamp)
     VALUES ('1', 'testhash0002', 'test@wizeline.com', 'test', 'test message', '3', '100', '90', '1', '1010', 2020, '6', '20', '2', "2020-06-22 00:00:00");
 
-INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp)
-    VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file1', '1', '2', 2020, '6', '20', '0', "2020-06-20 00:00:00");
-INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp)
-    VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file2', '10', '5', 2020, '6', '20', '0', "2020-06-20 00:00:00");
+INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp, modification_loc)
+    VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file1', '1', '2', 2020, '6', '20', '0', "2020-06-20 00:00:00", 3);
+INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp, modification_loc)
+    VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file2', '10', '5', 2020, '6', '20', '0', "2020-06-20 00:00:00", 4);
 
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,100);
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,110);
