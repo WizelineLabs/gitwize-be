@@ -21,7 +21,7 @@ func TestGetCommitDurationStat(t *testing.T) {
 	log.Println("data", from, to, data)
 	assert.Equal(t, data.ActiveDays, 2)
 	assert.Equal(t, data.TotalCommits, 2)
-	assert.Equal(t, data.Insertions, 20)
+	assert.Equal(t, data.Insertions, 17)
 	gormDB.Close()
 }
 
