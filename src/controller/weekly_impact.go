@@ -119,7 +119,7 @@ func getImpactScore(currentStat, prevStat db.DurationStat, currentModification, 
 
 // Impact = (5 * numFilesChanged) + (5 * numeditLocation) + (numPercentageNewcode/10) + (netChange/10)
 func getImpactScoreForPeriod(durationStat db.DurationStat, modificationStat db.ModificationStat) float64 {
-	numeditLocation := 0
+	numeditLocation := durationStat.Insertions
 	numPercentageNewcode := 0.0
 	if durationStat.Addtions != 0 {
 		numPercentageNewcode = float64(modificationStat.Modifications) * 100 / float64(durationStat.Addtions)

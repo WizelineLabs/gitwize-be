@@ -194,6 +194,7 @@ type DurationStat struct {
 	NumFiles     int `gorm:"column:num_files"`
 	Addtions     int `gorm:"column:additions"`
 	Deletions    int `gorm:"column:deletions"`
+	Insertions   int `gorm:"column:insertion_point"`
 }
 
 func (DurationStat) TableName() string {
