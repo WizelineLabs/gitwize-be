@@ -93,6 +93,7 @@ CREATE TABLE commit_data (
   day tinyint(1) NOT NULL,
   hour tinyint(1) NOT NULL,
   commit_time_stamp timestamp NULL,
+  insertion_point int(11) DEFAULT 0,
   PRIMARY KEY (repository_id,hash)
 )
 ENGINE=InnoDB
@@ -193,10 +194,10 @@ INSERT INTO repository_user(user_email,repo_full_name,repo_id,name,access_token,
 INSERT INTO repository(repo_full_name,name,status,url,access_token,branches,num_ref,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by,ctl_last_metric_updated)
     VALUES ("wizeline/gitwize-be", "gitwize-be","AVAILABLE","https://github.com/wizeline/gitwize-be","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","master",1,now(),"tester@wizeline.com",now(),"tester@wizeline.com","1970-01-01 00:00:00");
 
-INSERT INTO commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, total_loc, year, month, day, hour, commit_time_stamp)
-    VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'test message', '1', '32', '20', '1', '1000', 2020, '6', '20', '0', "2020-06-20 00:00:00");
-INSERT INTO commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, total_loc, year, month, day, hour, commit_time_stamp)
-    VALUES ('1', 'testhash0002', 'test@wizeline.com', 'test', 'test message', '3', '100', '90', '1', '1010', 2020, '6', '20', '2', "2020-06-22 00:00:00");
+INSERT INTO commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, insertion_point, total_loc, year, month, day, hour, commit_time_stamp)
+    VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'test message', '1', '32', '20', '1', '3', '1000', 2020, '6', '20', '0', "2020-06-20 00:00:00");
+INSERT INTO commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, insertion_point, total_loc, year, month, day, hour, commit_time_stamp)
+    VALUES ('1', 'testhash0002', 'test@wizeline.com', 'test', 'test message', '3', '100', '90', '1', '14', '1010', 2020, '6', '20', '2', "2020-06-22 00:00:00");
 
 INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp, modification_loc)
     VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file1', '1', '2', 2020, '6', '20', '0', "2020-06-20 00:00:00", 3);
