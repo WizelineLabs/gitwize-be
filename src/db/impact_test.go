@@ -38,6 +38,8 @@ func TestGetModificationStat(t *testing.T) {
 	log.Println("data", from, to, data)
 	assert.Equal(t, data.TableName(), tableModification)
 	assert.Equal(t, data.Modifications, 7)
+	assert.Equal(t, data.Additions, 11)
+	assert.Equal(t, data.Deletions, 7)
 	gormDB.Close()
 }
 
