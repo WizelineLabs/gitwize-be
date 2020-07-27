@@ -39,7 +39,8 @@ func GetModificationStat(repoID string, from, to time.Time) (ModificationStat, e
 	modificationStat := ModificationStat{}
 	err := gormDB.
 		Where("repository_id = ? AND commit_time_stamp >= ? AND commit_time_stamp <= ?", repoID, from, to).
-		Select("SUM(modification_loc) as modifications").
+		Select("SUM(IFNULL(modification_loc,0)) AS modifications, SUM(addition_loc) AS additions, SUM(deletion_loc) AS deletions").
+		// Select("SUM(modification_loc) AS modifications, SUM(addition_loc) AS additions, SUM(deletion_loc) AS deletions").
 		Find(&modificationStat).Error
 	if err != nil {
 		if !gorm.IsRecordNotFoundError(err) {
