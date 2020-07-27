@@ -208,3 +208,19 @@ type ModificationStat struct {
 func (ModificationStat) TableName() string {
 	return tableModification
 }
+
+type PullRequestInfo struct {
+	Title          string `gorm:"column:title" json:"title"`
+	Url            string `gorm:"column:url" json:"url"`
+	Status         string `gorm:"state" json:"state"`
+	Addition       int    `gorm:"column:additions" json:"additions"`
+	Deletion       int    `gorm:"column:deletions" json:"deletions"`
+	ReviewDuration int    `gorm:"column:review_duration" json:"review_duration"`
+	CreatedHour    int    `gorm:"column:created_hour" json:"created_hour"`
+	ClosedHour     int    `gorm:"column:closed_hour" json:"closed_hour"`
+	CreatedBy      string `gorm:"column:created_by" json:"created_by"`
+}
+
+func (PullRequestInfo) TableName() string {
+	return tablePullRequest
+}

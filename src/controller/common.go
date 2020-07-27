@@ -19,6 +19,7 @@ const (
 	gwWeeklyImpact       = ":id/impact/weekly"
 	gwCodeVelocity       = ":id/code-velocity"
 	gwQuarterlyTrend     = ":id/trends"
+	gwPullRequestSize    = ":id/pullrequest-size"
 )
 
 type AdminOperation int
@@ -66,6 +67,10 @@ const (
 	ErrMsgRepoInvalidUrl  = "Repo URL is invalid."
 
 	ErrKeyUnknownIssue = "Unknown"
+)
+
+const (
+	commonDateFormat = "2006-01-02"
 )
 
 type RestErr struct {

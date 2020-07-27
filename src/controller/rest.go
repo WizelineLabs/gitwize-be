@@ -382,6 +382,7 @@ func Initialize() *gin.Engine {
 		repoApi.GET(gwWeeklyImpact, getWeeklyImpact)
 		repoApi.GET(gwCodeVelocity, getCodeChangeVelocity)
 		repoApi.GET(gwQuarterlyTrend, getStatsQuarterlyTrends)
+		repoApi.GET(gwPullRequestSize, getPullRequestSize)
 	}
 
 	return ginCont
