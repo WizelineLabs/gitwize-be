@@ -1,10 +1,10 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gitwize-be/src/db"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -22,14 +22,12 @@ func parseDateFromHour(c *gin.Context, pullRequestHour int) (time.Time, int64) {
 	day := (pullRequestHour / 100) % 100
 	month := (pullRequestHour / 10000) % 100
 	year := pullRequestHour / 1000000
-	date, err := time.Parse(commonDateFormat, strconv.Itoa(year)+"-"+strconv.Itoa(month)+"-"+strconv.Itoa(day))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
+	dateFormat := fmt.Sprintf("%04d-%02d-%02d", year, month, day)
+	date, err := time.Parse(commonDateFormat, dateFormat)
+	if hasErrUnknown(c, err) {
 		return time.Time{}, 0
 	}
+
 	return date, date.Unix()
 }
 func getPullRequestSize(c *gin.Context) {
@@ -43,11 +41,7 @@ func getPullRequestSize(c *gin.Context) {
 
 	result := make(map[string][]PullRequestSize)
 	pullRequestInfos, err := db.GetPullRequestInfo(repoID, from, to)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
+	if hasErrUnknown(c, err) {
 		return
 	}
 
@@ -72,7 +66,7 @@ func getPullRequestSize(c *gin.Context) {
 					Title:       pullRequest.Title,
 					Size:        pullRequest.Addition + pullRequest.Deletion,
 					Status:      "opened",
-					ReviewTime:  pullRequest.ReviewDuration / 3600,
+					ReviewTime:  0,
 					Url:         pullRequest.Url,
 					CreatedDate: createdDate.Format(commonDateFormat),
 					CreatedBy:   pullRequest.CreatedBy,
@@ -83,19 +77,22 @@ func getPullRequestSize(c *gin.Context) {
 			if closedDate.IsZero() {
 				return
 			}
-			result[closedDate.Format(commonDateFormat)] = append(result[closedDate.Format(commonDateFormat)], PullRequestSize{
-				Title:       pullRequest.Title,
-				Size:        pullRequest.Addition + pullRequest.Deletion,
-				Status:      pullRequest.Status,
-				ReviewTime:  pullRequest.ReviewDuration / 3600,
-				Url:         pullRequest.Url,
-				CreatedDate: createdDate.Format(commonDateFormat),
-				CreatedBy:   pullRequest.CreatedBy,
-			})
-			end := closedInUnixTs - 24*3600
-			if end > to {
+			end := closedInUnixTs
+			if end <= to {
+				result[closedDate.Format(commonDateFormat)] = append(result[closedDate.Format(commonDateFormat)], PullRequestSize{
+					Title:       pullRequest.Title,
+					Size:        pullRequest.Addition + pullRequest.Deletion,
+					Status:      pullRequest.Status,
+					ReviewTime:  pullRequest.ReviewDuration / 3600,
+					Url:         pullRequest.Url,
+					CreatedDate: createdDate.Format(commonDateFormat),
+					CreatedBy:   pullRequest.CreatedBy,
+				})
+				end = closedInUnixTs - 24*3600
+			} else {
 				end = to
 			}
+
 			for ; runner <= end; runner += 24 * 3600 {
 				curDate := time.Unix(runner, 0).Format(commonDateFormat)
 				result[curDate] = append(result[curDate], PullRequestSize{

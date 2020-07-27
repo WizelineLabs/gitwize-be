@@ -204,6 +204,8 @@ INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file
 INSERT INTO file_stat_data (repository_id, hash, author_email, author_name, file_name, addition_loc, deletion_loc, year, month, day, hour, commit_time_stamp, modification_loc)
     VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'file2', '10', '5', 2020, '6', '20', '0', "2020-06-20 00:00:00", 4);
 
+INSERT INTO pull_request(repository_id, url, pr_no, title, body, head, base, state, created_by, created_year, created_month, created_day, created_hour, closed_year, closed_month, closed_day, closed_hour, additions, deletions, review_duration)
+    VALUES ('1', 'https://github.com/wizeline/gitwize-be/pull/1', '1', 'GWZ-23 verifies access token','','', 'master', 'merged', 'ltvcuong', 2020, 202005, 20200507, 2020050711, 2020, 202005, 20200511, 2020051104, 113, 7, 322766);
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",1,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,100);
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",2,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,110);
 INSERT INTO metric(repository_id,branch,type,year,month,day,hour,value) VALUES (1,"master",3,2020,2020*100 + 6,(2020*100 + 6)* 100 + 2,((2020*100 + 6)* 100 + 2) * 100 + 1,120);

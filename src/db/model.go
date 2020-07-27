@@ -212,7 +212,7 @@ func (ModificationStat) TableName() string {
 type PullRequestInfo struct {
 	Title          string `gorm:"column:title" json:"title"`
 	Url            string `gorm:"column:url" json:"url"`
-	Status         string `gorm:"state" json:"state"`
+	Status         string `gorm:"column:state" json:"state"`
 	Addition       int    `gorm:"column:additions" json:"additions"`
 	Deletion       int    `gorm:"column:deletions" json:"deletions"`
 	ReviewDuration int    `gorm:"column:review_duration" json:"review_duration"`

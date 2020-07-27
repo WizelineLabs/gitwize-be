@@ -8,9 +8,6 @@ import (
 	"time"
 )
 
-const LocalDBConnString = "gitwize_user:P@ssword123@(localhost:3306)/gitwize?parseTime=true&loc=Local"
-const InvalidLocalDBConnString = "invalid:P@ssword123@(localhost:3306)/gitwize?parseTime=true&loc=Local"
-
 func TestGetFileChurn(t *testing.T) {
 	gormDB, _ = gorm.Open("mysql", LocalDBConnString) // need to init gormDB again
 
