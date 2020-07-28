@@ -204,6 +204,8 @@ func (DurationStat) TableName() string {
 
 type ModificationStat struct {
 	Modifications int `gorm:"column:modifications"`
+	Additions     int `gorm:"column:additions"`
+	Deletions     int `gorm:"column:deletions"`
 }
 
 func (ModificationStat) TableName() string {

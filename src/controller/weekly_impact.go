@@ -30,7 +30,15 @@ spec https://wizeline.atlassian.net/wiki/spaces/GWZ/pages/1424393330/API+spec+-+
     "mostChurnedFile": [{
       "fileName": "abc.js",
       "value": 30
-    }]
+    },],
+    "newCodePercentage": {
+      "currentPeriod": 5,
+      "previousPeriod": 10
+    },
+    "churnPercentage": {
+      "currentPeriod": 17,
+      "previousPeriod": 23
+    }
 }
 */
 
@@ -62,6 +70,8 @@ type WeeklyImpactData struct {
 	ActiveDays       ImpactMetric   `json:"activeDays"`
 	CommitsPerDay    ImpactMetric   `json:"commitsPerDay"`
 	MostChurnedFiles []db.FileChurn `json:"mostChurnedFiles"`
+	NewCodePercent   ImpactMetric   `json:"newCodePercentage"`
+	ChurnPercent     ImpactMetric   `json:"churnPercentage"`
 }
 
 func getWeeklyImpact(c *gin.Context) {
@@ -83,6 +93,7 @@ func getWeeklyImpact(c *gin.Context) {
 	if hasErrUnknown(c, err) {
 		return
 	}
+
 	prevStat, err := db.GetCommitDurationStat(repoID, prevDuration.from, prevDuration.to)
 	if hasErrUnknown(c, err) {
 		return
@@ -98,12 +109,17 @@ func getWeeklyImpact(c *gin.Context) {
 		return
 	}
 
+	currentNewCodePercent, currentChurnPercent := getNewCodeAndChurnPercentage(currentModification)
+	prevNewCodePercent, prevChurnPercent := getNewCodeAndChurnPercentage(prevModification)
+
 	weeklyData := WeeklyImpactData{
 		ImpactPeriod:     getDatePeriod(currentDuration),
 		ImpactScore:      getImpactScore(currentStat, prevStat, currentModification, prevModification),
 		ActiveDays:       getActiveDays(currentStat, prevStat),
 		CommitsPerDay:    getCommitsPerDay(currentStat, prevStat),
 		MostChurnedFiles: mostChurnedFiles,
+		NewCodePercent:   ImpactMetric{currentNewCodePercent, prevNewCodePercent},
+		ChurnPercent:     ImpactMetric{currentChurnPercent, prevChurnPercent},
 	}
 
 	c.JSON(http.StatusOK, weeklyData)
@@ -119,12 +135,12 @@ func getImpactScore(currentStat, prevStat db.DurationStat, currentModification, 
 
 // Impact = (5 * numFilesChanged) + (5 * numeditLocation) + (numPercentageNewcode/10) + (netChange/10)
 func getImpactScoreForPeriod(durationStat db.DurationStat, modificationStat db.ModificationStat) float64 {
-	numeditLocation := durationStat.Insertions
+	numEditLocation := durationStat.Insertions
 	numPercentageNewcode := 0.0
 	if durationStat.Addtions != 0 {
-		numPercentageNewcode = float64(modificationStat.Modifications) * 100 / float64(durationStat.Addtions)
+		numPercentageNewcode = float64(modificationStat.Additions) * 100 / float64(durationStat.Addtions)
 	}
-	impact := 5*float64(durationStat.NumFiles) + 5*float64(numeditLocation) + numPercentageNewcode/10 + float64(durationStat.Addtions-durationStat.Deletions)/10
+	impact := 5*float64(durationStat.NumFiles) + 5*float64(numEditLocation) + numPercentageNewcode/10 + float64(durationStat.Addtions-durationStat.Deletions)/10
 	return math.Round(impact)
 }
 
@@ -147,4 +163,13 @@ func getCommitsPerDay(currentStat, prevStat db.DurationStat) ImpactMetric {
 		CurrentPeriod:  cur,
 		PreviousPeriod: prev,
 	}
+}
+
+func getNewCodeAndChurnPercentage(stat db.ModificationStat) (newCodePercent, churnPercent float64) {
+	totalAddition := stat.Additions + stat.Modifications
+	if totalAddition > 0 {
+		newCodePercent = float64(stat.Additions) / float64(totalAddition) * 100
+		churnPercent = float64(stat.Modifications) / float64(totalAddition) * 100
+	}
+	return newCodePercent, churnPercent
 }
