@@ -11,7 +11,8 @@ import (
 
 type CodeVelocity struct {
 	Commits        map[string]string `json:"commits"`
-	NetChanges     map[string]string `json:"netChanges"`
+	AdditionLOC    map[string]string `json:"additions"`
+	DeletionsLOC   map[string]string `json:"deletions"`
 	NewCodeChanges map[string]string `json:"newCodeChanges"`
 }
 
@@ -36,7 +37,7 @@ func getCodeChangeVelocity(c *gin.Context) {
 		return
 	}
 
-	commits, netChanges, err := db.GetCodeVelocity(repoID, time.Unix(int64(from), 0), time.Unix(int64(to), 0))
+	commits, additions, deletions, err := db.GetCodeVelocity(repoID, time.Unix(int64(from), 0), time.Unix(int64(to), 0))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, RestErr{
@@ -47,8 +48,9 @@ func getCodeChangeVelocity(c *gin.Context) {
 	}
 
 	velocity := CodeVelocity{
-		Commits:    commits,
-		NetChanges: netChanges,
+		Commits:      commits,
+		AdditionLOC:  additions,
+		DeletionsLOC: deletions,
 		// Fake newCodeChanges
 		NewCodeChanges: commits,
 	}
