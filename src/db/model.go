@@ -144,9 +144,10 @@ func (Contributor) TableName() string {
 }
 
 type CodeVelocityDBEntity struct {
-	Month      int    `gorm:"column:month"`
-	NetChanges string `gorm:"column:net_changes"`
-	NoCommits  string `gorm:"column:no_commits"`
+	Month     int    `gorm:"column:month"`
+	Addtions  string `gorm:"column:additions"`
+	Deletions string `gorm:"column:deletions"`
+	NoCommits string `gorm:"column:no_commits"`
 }
 
 func (CodeVelocityDBEntity) TableName() string {
@@ -203,6 +204,8 @@ func (DurationStat) TableName() string {
 
 type ModificationStat struct {
 	Modifications int `gorm:"column:modifications"`
+	Additions     int `gorm:"column:additions"`
+	Deletions     int `gorm:"column:deletions"`
 }
 
 func (ModificationStat) TableName() string {
