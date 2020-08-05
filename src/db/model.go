@@ -52,6 +52,7 @@ const (
 	tableFileChurn       = "file_stat_data"
 	tableCommitDuration  = "commit_data"
 	tableModification    = "file_stat_data"
+	tableSonarqube       = "sonarqube"
 )
 
 type Repository struct {
@@ -226,4 +227,31 @@ type PullRequestInfo struct {
 
 func (PullRequestInfo) TableName() string {
 	return tablePullRequest
+}
+
+type SonarQube struct {
+	UserEmail             string    `gorm:"column:user_email" json:"user_email"`
+	RepoId                string    `gorm:"column:repository_id" json:"repository_id"`
+	ProjectKey            string    `gorm:"column:project_key" json:"project_key"`
+	Token                 string    `gorm:"column:token" json:"token"`
+	Branch                string    `gorm:"column:branch" json:"branch"`
+	QualityGates          string    `gorm:"column:quality_gates" json:"quality_gates"`
+	Bugs                  int       `gorm:"column:bugs" json:"bugs"`
+	BugsRating            string    `gorm:"column:bugs_rating" json:"bugs_rating"`
+	Vulnerabilities       int       `gorm:"column:vulnerabilities" json:"vulnerabilities"`
+	VulnerabilitiesRating string    `gorm:"column:vulnerabilities_rating" json:"vulnerabilities_rating"`
+	CodeSmells            int       `gorm:"column:code_smells" json:"code_smells"`
+	Coverage              float64   `gorm:"column:coverage" json:"coverage"`
+	Duplications          float64   `gorm:"column:duplications" json:"duplications"`
+	DuplicationsBlocks    int       `gorm:"column:duplication_blocks" json:"duplication_blocks"`
+	CognitiveComplexity   int       `gorm:"column:cognitive_complexity" json:"cognitive_complexity"`
+	CyclomaticComplexity  int       `gorm:"column:cyclomatic_complexity" json:"cyclomatic_complexity"`
+	SecurityHotspots      int       `gorm:"column:security_hotspots" json:"security_hotspots"`
+	TechnicalDebt         int       `gorm:"column:technical_debt" json:"technical_debt"`
+	TechnicalDebtRating   string    `gorm:"column:technical_debt_rating" json:"technical_debt_rating"`
+	LastUpdated           time.Time `gorm:"column:last_updated" json:"last_updated"`
+}
+
+func (SonarQube) TableName() string {
+	return tableSonarqube
 }
