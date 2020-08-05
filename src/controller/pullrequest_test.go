@@ -23,15 +23,15 @@ func Test_PullRequestSize_OK(t *testing.T) {
 	expected := "{" +
 		"\"2020-05-05\":[]," +
 		"\"2020-05-06\":[]," +
-		"\"2020-05-07\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":89," +
+		"\"2020-05-07\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":5379," +
 		"\"url\":\"https://github.com/wizeline/gitwize-be/pull/1\",\"created_date\":\"2020-05-07\",\"created_by\":\"ltvcuong\"}]," +
-		"\"2020-05-08\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":89," +
+		"\"2020-05-08\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":5379," +
 		"\"url\":\"https://github.com/wizeline/gitwize-be/pull/1\",\"created_date\":\"2020-05-07\",\"created_by\":\"ltvcuong\"}]," +
-		"\"2020-05-09\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":89," +
+		"\"2020-05-09\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":5379," +
 		"\"url\":\"https://github.com/wizeline/gitwize-be/pull/1\",\"created_date\":\"2020-05-07\",\"created_by\":\"ltvcuong\"}]," +
-		"\"2020-05-10\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":89," +
+		"\"2020-05-10\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":5379," +
 		"\"url\":\"https://github.com/wizeline/gitwize-be/pull/1\",\"created_date\":\"2020-05-07\",\"created_by\":\"ltvcuong\"}]," +
-		"\"2020-05-11\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"merged\",\"review_time\":89," +
+		"\"2020-05-11\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"merged\",\"review_time\":5379," +
 		"\"url\":\"https://github.com/wizeline/gitwize-be/pull/1\",\"created_date\":\"2020-05-07\",\"created_by\":\"ltvcuong\"}]," +
 		"\"2020-05-12\":[]}"
 	assert.Equal(t, expected, w.Body.String())
@@ -45,13 +45,13 @@ func Test_PullRequestSize_OK(t *testing.T) {
 	expected = "{" +
 		"\"2020-05-05\":[]," +
 		"\"2020-05-06\":[]," +
-		"\"2020-05-07\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":89," +
+		"\"2020-05-07\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":5379," +
 		"\"url\":\"https://github.com/wizeline/gitwize-be/pull/1\",\"created_date\":\"2020-05-07\",\"created_by\":\"ltvcuong\"}]," +
-		"\"2020-05-08\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":89," +
+		"\"2020-05-08\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":5379," +
 		"\"url\":\"https://github.com/wizeline/gitwize-be/pull/1\",\"created_date\":\"2020-05-07\",\"created_by\":\"ltvcuong\"}]," +
-		"\"2020-05-09\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":89," +
+		"\"2020-05-09\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":5379," +
 		"\"url\":\"https://github.com/wizeline/gitwize-be/pull/1\",\"created_date\":\"2020-05-07\",\"created_by\":\"ltvcuong\"}]," +
-		"\"2020-05-10\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":89," +
+		"\"2020-05-10\":[{\"title\":\"GWZ-23 verifies access token\",\"size\":120,\"status\":\"opened\",\"review_time\":5379," +
 		"\"url\":\"https://github.com/wizeline/gitwize-be/pull/1\",\"created_date\":\"2020-05-07\",\"created_by\":\"ltvcuong\"}]}"
 	assert.Equal(t, expected, w.Body.String())
 }
