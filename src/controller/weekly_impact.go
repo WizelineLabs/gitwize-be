@@ -85,18 +85,19 @@ type ChurnMetric struct {
 }
 
 type WeeklyImpactData struct {
-	ImpactPeriod     DatePeriod     `json:"period"`
-	ImpactScore      ImpactMetric   `json:"impactScore"`
-	ActiveDays       ImpactMetric   `json:"activeDays"`
-	CommitsPerDay    ImpactMetric   `json:"commitsPerDay"`
-	MostChurnedFiles []db.FileChurn `json:"mostChurnedFiles"`
-	NewCodePercent   ImpactMetric   `json:"newCodePercentage"`
-	ChurnPercent     ImpactMetric   `json:"churnPercentage"`
-	LegacyPercent    ImpactMetric   `json:"legacyPercentage"`
-	FileChanged      ImpactMetric   `json:"fileChanged"`
-	InsertionPoints  ImpactMetric   `json:"insertionPoints"`
-	Additions        ImpactMetric   `json:"additions"`
-	Deletions        ImpactMetric   `json:"deletions"`
+	ImpactPeriod     DatePeriod      `json:"period"`
+	ImpactScore      ImpactMetric    `json:"impactScore"`
+	ActiveDays       ImpactMetric    `json:"activeDays"`
+	CommitsPerDay    ImpactMetric    `json:"commitsPerDay"`
+	MostChurnedFiles []db.FileChurn  `json:"mostChurnedFiles"`
+	NewCodePercent   ImpactMetric    `json:"newCodePercentage"`
+	ChurnPercent     ImpactMetric    `json:"churnPercentage"`
+	LegacyPercent    ImpactMetric    `json:"legacyPercentage"`
+	FileChanged      ImpactMetric    `json:"fileChanged"`
+	InsertionPoints  ImpactMetric    `json:"insertionPoints"`
+	Additions        ImpactMetric    `json:"additions"`
+	Deletions        ImpactMetric    `json:"deletions"`
+	UnusualFiles     []db.FileDetail `json:"unusualFiles"`
 }
 
 func getWeeklyImpact(c *gin.Context) {
@@ -140,6 +141,11 @@ func getWeeklyImpact(c *gin.Context) {
 		return
 	}
 
+	unusualfiles, err := db.GetUnusualFiles(repoID, currentDuration.from, currentDuration.to)
+	if hasErrUnknown(c, err) {
+		return
+	}
+
 	currentNewCodePercent, currentChurnPercent := getNewCodeAndChurnPercentage(currentModification)
 	prevNewCodePercent, prevChurnPercent := getNewCodeAndChurnPercentage(prevModification)
 
@@ -156,6 +162,7 @@ func getWeeklyImpact(c *gin.Context) {
 		InsertionPoints:  getInsertionPoints(currentStat, prevStat),
 		Additions:        getAdditions(currentStat, prevStat),
 		Deletions:        getDeletions(currentStat, prevStat),
+		UnusualFiles:     unusualfiles,
 	}
 
 	c.JSON(http.StatusOK, weeklyData)

@@ -27,10 +27,10 @@ type TestWeeklyData struct {
 	InsertionPoints  map[string]interface{}   `json:"insertionPoints"`
 	Additions        map[string]interface{}   `json:"additions"`
 	Deletions        map[string]interface{}   `json:"deletions"`
+	UnusualFiles     []map[string]interface{} `json:"unusualFiles"`
 }
 
 func TestGetWeeklyImpact(t *testing.T) {
-	// from := int64(1592784000) // 2020-06-22
 	from := int64(1592870400) // 2020-06-23
 	configuration.CurConfiguration.Auth.AuthDisable = "true"
 	w := performRequest(router, http.MethodGet, gwEndPointRepository+
@@ -61,6 +61,7 @@ func TestGetWeeklyImpact(t *testing.T) {
 	assert.Equal(t, resp.Additions["previousPeriod"], 32.0)
 	assert.Equal(t, resp.Deletions["currentPeriod"], 90.0)
 	assert.Equal(t, resp.Deletions["previousPeriod"], 20.0)
+	assert.Equal(t, len(resp.UnusualFiles), 0)
 }
 
 func TestGetWeeklyImpactNotFound(t *testing.T) {
