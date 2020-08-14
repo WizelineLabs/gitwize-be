@@ -255,6 +255,7 @@ type SonarQube struct {
 
 func (SonarQube) TableName() string {
 	return tableSonarqube
+}
 
 type FileDetail struct {
 	FileName  string `gorm:"column:file_name" json:"fileName"`
@@ -264,5 +265,4 @@ type FileDetail struct {
 
 func (FileDetail) TableName() string {
 	return tableFileDetail
-
 }
