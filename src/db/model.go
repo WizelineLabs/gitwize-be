@@ -53,6 +53,7 @@ const (
 	tableCommitDuration  = "commit_data"
 	tableModification    = "file_stat_data"
 	tableSonarqube       = "sonarqube"
+	tableFileDetail      = "file_stat_data"
 )
 
 type Repository struct {
@@ -254,4 +255,14 @@ type SonarQube struct {
 
 func (SonarQube) TableName() string {
 	return tableSonarqube
+
+type FileDetail struct {
+	FileName  string `gorm:"column:file_name" json:"fileName"`
+	Additions int    `gorm:"column:addition_loc" json:"additions"`
+	Deletions int    `gorm:"column:deletion_loc" json:"deletions"`
+}
+
+func (FileDetail) TableName() string {
+	return tableFileDetail
+
 }
