@@ -50,6 +50,7 @@ type SonarQubeConfigurations struct {
 	AdminSecret    string
 	ScannerPath    string
 	PropertiesPath string
+	BaseDirectory  string
 }
 
 var CurConfiguration Configurations

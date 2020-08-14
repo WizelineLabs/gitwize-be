@@ -147,6 +147,7 @@ CREATE TABLE sonarqube (
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COLLATE=utf8_general_ci;
+
 -- Calculate PR Open metric for repository
 DROP PROCEDURE IF EXISTS calculate_metric_open_pr;
 DELIMITER $$

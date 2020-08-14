@@ -12,8 +12,9 @@ auth:
 
 endpoint:
   frontEnd: 'https://dev.gitwize.net'
-  sonarQubeServer: 'https://sonarqube.gitwize.net/'
+  sonarQubeServer: 'https://sonarqube.gitwize.net'
 
 sonarqube:
   scannerPath: '/usr/local/sonarqube/sonar-scanner/bin/sonar-scanner'
   propertiesPath: '/usr/local/sonarqube/sonar-scanner/conf/sonar-scanner.properties'
+  baseDirectory: '~/'
