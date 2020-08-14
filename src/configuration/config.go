@@ -9,11 +9,12 @@ import (
 
 // Configurations exported
 type Configurations struct {
-	Server   ServerConfigurations
-	Database DatabaseConfigurations
-	Auth     AuthConfigurations
-	Cypher   CypherConfigurations
-	Endpoint EndpointConfigurations
+	Server    ServerConfigurations
+	Database  DatabaseConfigurations
+	Auth      AuthConfigurations
+	Cypher    CypherConfigurations
+	Endpoint  EndpointConfigurations
+	SonarQube SonarQubeConfigurations
 }
 
 // ServerConfigurations exported
@@ -41,7 +42,14 @@ type AuthConfigurations struct {
 
 // Endpoint FE exported
 type EndpointConfigurations struct {
-	Frontend string
+	Frontend        string
+	SonarQubeServer string
+}
+
+type SonarQubeConfigurations struct {
+	AdminSecret    string
+	ScannerPath    string
+	PropertiesPath string
 }
 
 var CurConfiguration Configurations
@@ -53,24 +61,29 @@ func ReadConfiguration() {
 	deployEnv := viper.GetString(gwDeployEnv)
 	var gwDbPasswordEnv string
 	var cypherPassPhaseEnv string
+	var sonarQubeAdminSecret string
 	// Set the file name of the configurations file
 	switch deployEnv {
 	case devEnvironment:
 		viper.SetConfigName(configDev)
 		gwDbPasswordEnv = gwDbPasswordDev
 		cypherPassPhaseEnv = cypherPassPhaseDev
+		sonarQubeAdminSecret = sonarQubeAdminSecretDev
 	case qaEnvironment:
 		viper.SetConfigName(configQA)
 		gwDbPasswordEnv = gwDbPasswordQA
 		cypherPassPhaseEnv = cypherPassPhaseQA
+		sonarQubeAdminSecret = sonarQubeAdminSecretQA
 	case prodEnvironment:
 		viper.SetConfigName(configPROD)
 		gwDbPasswordEnv = gwDbPasswordPROD
 		cypherPassPhaseEnv = cypherPassPhasePROD
+		sonarQubeAdminSecret = sonarQubeAdminSecretPROD
 	default:
 		viper.SetConfigName(configLocal)
 		gwDbPasswordEnv = gwDbPasswordLocal
 		cypherPassPhaseEnv = cypherPassPhaseLocal
+		sonarQubeAdminSecret = sonarQubeAdminSecretLocal
 	}
 
 	// Set the path to look for the configurations file
@@ -97,4 +110,5 @@ func ReadConfiguration() {
 	}
 	CurConfiguration.Database.GwDbPassword = viper.GetString(gwDbPasswordEnv)
 	CurConfiguration.Cypher.PassPhase = viper.GetString(cypherPassPhaseEnv)
+	CurConfiguration.SonarQube.AdminSecret = viper.GetString(sonarQubeAdminSecret)
 }

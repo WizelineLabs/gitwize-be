@@ -121,6 +121,32 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COLLATE=utf8_general_ci;
 
+CREATE TABLE sonarqube (
+  user_email varchar(256) NOT NULL,
+  repository_id int NOT NULL,
+  token varchar(70) NOT NULL,
+  project_key varchar(70) NOT NULL,
+  branch varchar(256) DEFAULT 'master',
+  quality_gates varchar(128) DEFAULT 'passed',
+  bugs int DEFAULT 0,
+  bugs_rating varchar(10) DEFAULT "",
+  vulnerabilities int DEFAULT 0,
+  vulnerabilities_rating varchar(10) DEFAULT "",
+  code_smells int DEFAULT 0,
+  coverage float DEFAULT 0.0,
+  duplications float DEFAULT 0.0,
+  duplication_blocks int DEFAULT 0,
+  cognitive_complexity int DEFAULT 0,
+  cyclomatic_complexity int DEFAULT 0,
+  security_hotspots int DEFAULT 0,
+  technical_debt int DEFAULT 0,
+  technical_debt_rating varchar(10) DEFAULT "",
+  last_updated timestamp NOT NULL,
+  PRIMARY KEY (user_email,repository_id)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8
+COLLATE=utf8_general_ci;
 -- Calculate PR Open metric for repository
 DROP PROCEDURE IF EXISTS calculate_metric_open_pr;
 DELIMITER $$
@@ -193,6 +219,11 @@ INSERT INTO repository_user(user_email,repo_full_name,repo_id,name,access_token,
     VALUES ("tester@wizeline.com","wizeline/gitwize-be",1,"gitwize-be","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","master");
 INSERT INTO repository(repo_full_name,name,status,url,access_token,branches,num_ref,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by,ctl_last_metric_updated)
     VALUES ("wizeline/gitwize-be", "gitwize-be","AVAILABLE","https://github.com/wizeline/gitwize-be","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","master",1,now(),"tester@wizeline.com",now(),"tester@wizeline.com","1970-01-01 00:00:00");
+
+INSERT INTO repository_user(user_email,repo_full_name,repo_id,name,access_token,branches)
+    VALUES ("tester@wizeline.com","wizeline/gitwize",2,"gitwize","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","master");
+INSERT INTO repository(repo_full_name,name,status,url,access_token,branches,num_ref,ctl_created_date,ctl_created_by,ctl_modified_date,ctl_modified_by,ctl_last_metric_updated)
+    VALUES ("wizeline/gitwize", "gitwize","LOADING","https://github.com/wizeline/gitwize","L4ug7bs3myyxTR7Zmj3qKXi+SR6NqUwXHi+MksVmNIuYKzlR5IjzPls2j+ck6n2Pz1tV3PGyqYezQgeq5ED43PuV0Bs=","master",1,now(),"tester@wizeline.com",now(),"tester@wizeline.com","1970-01-01 00:00:00");
 
 INSERT INTO commit_data (repository_id, hash, author_email, author_name, message, num_files, addition_loc, deletion_loc, num_parents, insertion_point, total_loc, year, month, day, hour, commit_time_stamp)
     VALUES ('1', 'testhash0001', 'test@wizeline.com', 'test', 'test message', '1', '32', '20', '1', '3', '1000', 2020, '6', '20', '0', "2020-06-20 00:00:00");

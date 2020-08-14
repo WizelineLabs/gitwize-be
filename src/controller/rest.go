@@ -7,6 +7,7 @@ import (
 	"gitwize-be/src/db"
 	"gitwize-be/src/githubapi"
 	"gitwize-be/src/lambda"
+	"gitwize-be/src/sonarqube"
 	"gitwize-be/src/utils"
 	"net/http"
 	"os"
@@ -230,6 +231,11 @@ func postRepos(c *gin.Context) {
 		LastUpdated: createdRepo.CtlModifiedDate,
 	}
 
+	go func() { // Start setup sonarQube & Scan
+		sonarqube.SetupSonarQube(userId, strconv.Itoa(createdRepo.ID), "master")
+		sonarqube.ScanAndUpdateResult(userId, strconv.Itoa(createdRepo.ID))
+	}()
+
 	c.JSON(http.StatusCreated, repoInfo)
 }
 
@@ -375,7 +381,6 @@ func Initialize() *gin.Engine {
 		repoApi.GET("", getListRepos)
 		repoApi.GET(gwRepoGetPutDel, getRepos)
 		repoApi.POST("", postRepos)
-		//repoApi.PUT(gwRepoGetPutDel, putRepos)
 		repoApi.DELETE(gwRepoGetPutDel, delRepos)
 		repoApi.GET(gwRepoStats, getStats)
 		repoApi.GET(gwContributorStats, getContributorStats)
@@ -383,6 +388,7 @@ func Initialize() *gin.Engine {
 		repoApi.GET(gwCodeVelocity, getCodeChangeVelocity)
 		repoApi.GET(gwQuarterlyTrend, getStatsQuarterlyTrends)
 		repoApi.GET(gwPullRequestSize, getPullRequestSize)
+		repoApi.GET(gwCodeQuality, getCodeQuality)
 	}
 
 	return ginCont
