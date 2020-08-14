@@ -15,6 +15,7 @@ import (
 
 const (
 	sonarQubeAPIProjectCreate      = "/api/projects/create?"
+	sonarQubeAPIProjectDel         = "/api/projects/delete?"
 	sonarQubeAPITokenCreate        = "/api/user_tokens/generate?"
 	sonarQubeAPIMetricRating       = "/api/project_badges/measure?"
 	sonarQubeAPIGetComponentMetric = "/api/measures/component?"
@@ -64,10 +65,19 @@ func cloneRepo(repoName, repoURL, token string) {
 
 	repoPath := configuration.CurConfiguration.SonarQube.BaseDirectory + repoName
 	os.RemoveAll(repoPath)
+	decryptToken := ""
+	if len(token) > 0 {
+		decryptToken = cypher.DecryptString(token, os.Getenv("CYPHER_PASS_PHASE"))
+	} else {
+		if configuration.CurConfiguration.Auth.AuthDisable == "true" &&
+			os.Getenv("USE_DEFAULT_API_TOKEN") == "true" {
+			decryptToken = os.Getenv("DEFAULT_GITHUB_TOKEN")
+		}
+	}
 	if _, err := git.PlainClone(repoPath, false, &git.CloneOptions{
 		Auth: &gogit_http.BasicAuth{
 			Username: "nonempty",
-			Password: cypher.DecryptString(token, os.Getenv("CYPHER_PASS_PHASE")),
+			Password: decryptToken,
 		},
 		URL:               repoURL,
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,

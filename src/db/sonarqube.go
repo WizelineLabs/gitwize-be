@@ -21,3 +21,10 @@ func UpdateSonarQubeInstance(sonarQube *SonarQube) error {
 	return gormDB.Model(sonarQube).Where("user_email = ? AND repository_id = ?",
 		sonarQube.UserEmail, sonarQube.RepoId).Update(sonarQube).Error
 }
+
+func DelSonarQubeIntance(userEmail, repoId string) error {
+	sonarQubeInt := SonarQube{}
+
+	return gormDB.Debug().Model(sonarQubeInt).Where("user_email = ? AND repository_id = ?",
+		userEmail, repoId).Delete(&sonarQubeInt).Error
+}

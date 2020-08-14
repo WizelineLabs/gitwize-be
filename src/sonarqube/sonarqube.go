@@ -46,6 +46,25 @@ var metricRatingsMapping = map[string]string{
 	"security_rating":    "security",
 }
 
+func DelSonarQubeProj(userEmail, repoId string) error {
+	utils.Trace()
+	sonarQubeInt := db.SonarQube{}
+	if err := db.GetSonarQubeInstance(userEmail, repoId, &sonarQubeInt); err != nil {
+		return err
+	}
+	if len(sonarQubeInt.Token) == 0 { // This sonarQube instance has been deleted or not created before
+		return nil
+	}
+
+	if _, err := performHttpRequest(configuration.CurConfiguration.Endpoint.SonarQubeServer +
+		sonarQubeAPIProjectDel + "project=" + sonarQubeInt.ProjectKey); err != nil {
+		log.Printf(utils.Trace() + ": Error: " + err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func SetupSonarQube(userEmail, repoId, mainBranch string) error {
 	utils.Trace()
 	sonarQubeInt := db.SonarQube{}
@@ -56,14 +75,14 @@ func SetupSonarQube(userEmail, repoId, mainBranch string) error {
 		return nil
 	}
 	projectName := strings.Replace(userEmail, "@", "_", -1) + "_" + repoId + "_" + strconv.Itoa(int(time.Now().Unix()))
-	if respCreatePrj, err := performHttpRequest(configuration.CurConfiguration.Endpoint.SonarQubeServer + "/" +
+	if respCreatePrj, err := performHttpRequest(configuration.CurConfiguration.Endpoint.SonarQubeServer +
 		sonarQubeAPIProjectCreate + "name=" + projectName + "&project=" + projectName); err != nil {
 		log.Printf(utils.Trace() + ": Error: " + err.Error())
 		return err
 	} else {
 		defer respCreatePrj.Body.Close()
 		if respCreatePrj.StatusCode == http.StatusOK {
-			if respCreateToken, errToken := performHttpRequest(configuration.CurConfiguration.Endpoint.SonarQubeServer + "/" +
+			if respCreateToken, errToken := performHttpRequest(configuration.CurConfiguration.Endpoint.SonarQubeServer +
 				sonarQubeAPITokenCreate + "name=" + projectName); errToken != nil {
 				log.Printf(utils.Trace() + ": Error: " + err.Error())
 				return errToken

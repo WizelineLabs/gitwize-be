@@ -252,22 +252,14 @@ func delRepos(c *gin.Context) {
 
 	id := c.Param("id")
 	repo := db.Repository{}
-	if err := db.GetOneRepoUser(userId, id, &repo); err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
-		return
+	if !hasErrUnknown(c, db.GetOneRepoUser(userId, id, &repo)) &&
+		!hasErrUnknown(c, sonarqube.DelSonarQubeProj(userId, strconv.Itoa(repo.ID))) &&
+		!hasErrUnknown(c, db.DelSonarQubeIntance(userId, strconv.Itoa(repo.ID))) &&
+		!hasErrUnknown(c, db.DeleteRepoUser(userId, &repo)) {
+		c.JSON(http.StatusNoContent, nil)
 	}
 
-	if err := db.DeleteRepoUser(userId, &repo); err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusNoContent, nil)
+	return
 }
 
 func getStats(c *gin.Context) {
