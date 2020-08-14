@@ -14,25 +14,38 @@ import (
 )
 
 const (
-	sonarQubeAPIProjectCreate = "/api/projects/create?"
-	sonarQubeAPITokenCreate   = "/api/user_tokens/generate?"
-	sonarQubeAPIGetMetric     = "/api/project_badges/measure?"
-	sonarAdminUser            = "admin"
-)
-
-const (
-	curDirectory string = "~/"
+	sonarQubeAPIProjectCreate      = "/api/projects/create?"
+	sonarQubeAPITokenCreate        = "/api/user_tokens/generate?"
+	sonarQubeAPIMetricRating       = "/api/project_badges/measure?"
+	sonarQubeAPIGetComponentMetric = "/api/measures/component?"
+	sonarAdminUser                 = "admin"
 )
 
 type SonarQubeToken struct {
-	Login     string    `json:"login"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"createdAt"`
-	Token     string    `json:"token"`
+	Login string `json:"login"`
+	Name  string `json:"name"`
+	Token string `json:"token"`
 }
 
-func performHttpRequest(url string) (*http.Response, error) {
-	req, err := http.NewRequest("POST", url, nil)
+type Metric struct {
+	Type  string `json:"metric"`
+	Value string `json:"value"`
+}
+
+type Measures struct {
+	Measure []Metric `json:"measures"`
+}
+
+type Component struct {
+	AllMeasures Measures `json:"component"`
+}
+
+func performHttpRequest(url string, methodParam ...string) (*http.Response, error) {
+	reqMethod := "POST"
+	if len(methodParam) == 1 {
+		reqMethod = methodParam[0]
+	}
+	req, err := http.NewRequest(reqMethod, url, nil)
 	req.SetBasicAuth(sonarAdminUser, configuration.CurConfiguration.SonarQube.AdminSecret)
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -49,7 +62,7 @@ func performHttpRequest(url string) (*http.Response, error) {
 func cloneRepo(repoName, repoURL, token string) {
 	defer utils.TimeTrack(time.Now(), "getRepo: "+repoName)
 
-	repoPath := curDirectory + repoName
+	repoPath := configuration.CurConfiguration.SonarQube.BaseDirectory + repoName
 	os.RemoveAll(repoPath)
 	if _, err := git.PlainClone(repoPath, false, &git.CloneOptions{
 		Auth: &gogit_http.BasicAuth{

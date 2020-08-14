@@ -12,8 +12,9 @@ auth:
 
 endpoint:
   frontEnd: 'http://localhost:8080'
-  sonarQubeServer: 'https://sonarqube.gitwize.net'
+  sonarQubeServer: 'http://localhost'
 
 sonarqube:
   scannerPath: '/Users/khoa.nguyen/Downloads/sonar-scanner-4.4.0.2170-macosx/bin/sonar-scanner'
   propertiesPath: '/Users/khoa.nguyen/Downloads/sonar-scanner-4.4.0.2170-macosx/conf/sonar-scanner.properties'
+  baseDirectory: '/tmp/'

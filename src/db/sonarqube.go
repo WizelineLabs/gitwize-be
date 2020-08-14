@@ -18,5 +18,6 @@ func GetSonarQubeInstance(userEmail, repoId string, sonarQubeInt *SonarQube) err
 
 func UpdateSonarQubeInstance(sonarQube *SonarQube) error {
 
-	return gormDB.Save(sonarQube).Error
+	return gormDB.Model(sonarQube).Where("user_email = ? AND repository_id = ?",
+		sonarQube.UserEmail, sonarQube.RepoId).Update(sonarQube).Error
 }

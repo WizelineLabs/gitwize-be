@@ -9,6 +9,7 @@ import (
 	"gitwize-be/src/lambda"
 	"gitwize-be/src/sonarqube"
 	"gitwize-be/src/utils"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -232,8 +233,11 @@ func postRepos(c *gin.Context) {
 	}
 
 	go func() { // Start setup sonarQube & Scan
-		sonarqube.SetupSonarQube(userId, strconv.Itoa(createdRepo.ID), "master")
-		sonarqube.ScanAndUpdateResult(userId, strconv.Itoa(createdRepo.ID))
+		if err := sonarqube.SetupSonarQube(userId, strconv.Itoa(createdRepo.ID), "master"); err != nil {
+			log.Println(utils.Trace() + ": Error:" + err.Error())
+		} else {
+			sonarqube.ScanAndUpdateResult(userId, strconv.Itoa(createdRepo.ID))
+		}
 	}()
 
 	c.JSON(http.StatusCreated, repoInfo)

@@ -6,9 +6,9 @@ CREATE TABLE sonarqube (
   branch varchar(256) DEFAULT 'master',
   quality_gates varchar(128) DEFAULT 'passed',
   bugs int DEFAULT 0,
-  bugs_rating varchar(10) DEFAULT "A",
+  bugs_rating varchar(10) DEFAULT "",
   vulnerabilities int DEFAULT 0,
-  vulnerabilities_rating varchar(10) DEFAULT "A",
+  vulnerabilities_rating varchar(10) DEFAULT "",
   code_smells int DEFAULT 0,
   coverage float DEFAULT 0.0,
   duplications float DEFAULT 0.0,
@@ -17,7 +17,7 @@ CREATE TABLE sonarqube (
   cyclomatic_complexity int DEFAULT 0,
   security_hotspots int DEFAULT 0,
   technical_debt int DEFAULT 0,
-  technical_debt_rating varchar(10) DEFAULT "A",
+  technical_debt_rating varchar(10) DEFAULT "",
   last_updated timestamp NOT NULL,
   PRIMARY KEY (user_email,repository_id)
 )
