@@ -15,19 +15,26 @@ import (
 var endpoint = strings.TrimLeft(gwWeeklyImpact, "id:")
 
 type TestWeeklyData struct {
-	ImpactPeriod     map[string]interface{} `json:"period"`
-	ImpactScore      map[string]interface{} `json:"impactScore"`
-	ActiveDays       map[string]interface{} `json:"activeDays"`
-	CommitsPerDay    map[string]interface{} `json:"commitsPerDay"`
-	MostChurnedFiles []interface{}          `json:"mostChurnedFiles"`
-	NewCodePercent   map[string]interface{} `json:"newCodePercentage"`
-	ChurnPercent     map[string]interface{} `json:"churnPercentage"`
+	ImpactPeriod     map[string]interface{}   `json:"period"`
+	ImpactScore      map[string]interface{}   `json:"impactScore"`
+	ActiveDays       map[string]interface{}   `json:"activeDays"`
+	CommitsPerDay    map[string]interface{}   `json:"commitsPerDay"`
+	MostChurnedFiles []map[string]interface{} `json:"mostChurnedFiles"`
+	NewCodePercent   map[string]interface{}   `json:"newCodePercentage"`
+	ChurnPercent     map[string]interface{}   `json:"churnPercentage"`
+	LegacyPercent    map[string]interface{}   `json:"legacyPercentage"`
+	FileChanged      map[string]interface{}   `json:"fileChanged"`
+	InsertionPoints  map[string]interface{}   `json:"insertionPoints"`
+	Additions        map[string]interface{}   `json:"additions"`
+	Deletions        map[string]interface{}   `json:"deletions"`
+	UnusualFiles     []map[string]interface{} `json:"unusualFiles"`
 }
 
 func TestGetWeeklyImpact(t *testing.T) {
+	from := int64(1592870400) // 2020-06-23
 	configuration.CurConfiguration.Auth.AuthDisable = "true"
 	w := performRequest(router, http.MethodGet, gwEndPointRepository+
-		strconv.Itoa(1)+endpoint,
+		strconv.Itoa(1)+endpoint+"?date_from="+strconv.FormatInt(from, 10),
 		nil, header{Key: "AuthenticatedUser", Value: "tester@wizeline.com"})
 	assert.Equal(t, http.StatusOK, w.Code)
 	resp := TestWeeklyData{}
@@ -36,11 +43,25 @@ func TestGetWeeklyImpact(t *testing.T) {
 	assert.NotNil(t, resp.ImpactPeriod["date_from"])
 	assert.NotNil(t, resp.ImpactPeriod["date_to"])
 	assert.NotNil(t, resp.ImpactScore)
-	assert.NotNil(t, resp.ActiveDays)
-	assert.NotNil(t, resp.CommitsPerDay)
-	assert.NotNil(t, resp.MostChurnedFiles)
-	assert.NotNil(t, resp.NewCodePercent)
-	assert.NotNil(t, resp.ChurnPercent)
+	assert.Equal(t, resp.ActiveDays["currentPeriod"], 1.0)
+	assert.Equal(t, resp.ActiveDays["previousPeriod"], 1.0)
+	assert.Equal(t, resp.CommitsPerDay["currentPeriod"], 1.0)
+	assert.Equal(t, resp.MostChurnedFiles[0]["fileName"], "file2")
+	assert.Equal(t, resp.NewCodePercent["currentPeriod"], 71.42857142857143)
+	assert.Equal(t, resp.NewCodePercent["previousPeriod"], 25.0)
+	assert.Equal(t, resp.ChurnPercent["currentPeriod"], 28.57142857142857)
+	assert.Equal(t, resp.ChurnPercent["previousPeriod"], 75.0)
+	assert.Equal(t, resp.LegacyPercent["currentPeriod"], 17.33)
+	assert.Equal(t, resp.LegacyPercent["previousPeriod"], 23.44)
+	assert.Equal(t, resp.FileChanged["currentPeriod"], 3.0)
+	assert.Equal(t, resp.FileChanged["previousPeriod"], 1.0)
+	assert.Equal(t, resp.InsertionPoints["currentPeriod"], 14.0)
+	assert.Equal(t, resp.InsertionPoints["previousPeriod"], 3.0)
+	assert.Equal(t, resp.Additions["currentPeriod"], 100.0)
+	assert.Equal(t, resp.Additions["previousPeriod"], 32.0)
+	assert.Equal(t, resp.Deletions["currentPeriod"], 90.0)
+	assert.Equal(t, resp.Deletions["previousPeriod"], 20.0)
+	assert.Equal(t, len(resp.UnusualFiles), 0)
 }
 
 func TestGetWeeklyImpactNotFound(t *testing.T) {
