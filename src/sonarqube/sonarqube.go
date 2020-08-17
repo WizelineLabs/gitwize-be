@@ -128,7 +128,12 @@ func ScanAndUpdateResult(userEmail, repoId string) error {
 	// Edit sonar property file
 	os.Remove(configuration.CurConfiguration.SonarQube.PropertiesPath)
 
-	oFile, _ := os.Create(configuration.CurConfiguration.SonarQube.PropertiesPath)
+	oFile, err := os.Create(configuration.CurConfiguration.SonarQube.PropertiesPath)
+	if err != nil {
+		log.Println(utils.Trace() + ": Error: " + err.Error())
+		mux.Unlock()
+		return err
+	}
 	sonarConfig := "sonar.host.url=" + configuration.CurConfiguration.Endpoint.SonarQubeServer + "\n" +
 		"sonar.sources=" + configuration.CurConfiguration.SonarQube.BaseDirectory + repository.Name + "\n" +
 		"sonar.projectBaseDir=" + configuration.CurConfiguration.SonarQube.BaseDirectory + repository.Name + "\n" +
@@ -143,8 +148,11 @@ func ScanAndUpdateResult(userEmail, repoId string) error {
 	command.Stderr = os.Stderr
 	if err := command.Run(); err != nil {
 		log.Println(utils.Trace() + ": Error: " + err.Error())
+		mux.Unlock()
 		return err
 	}
+
+	os.RemoveAll(configuration.CurConfiguration.SonarQube.BaseDirectory + repository.Name)
 	// Unlock mutex ======
 	mux.Unlock()
 
