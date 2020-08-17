@@ -15,6 +15,6 @@ endpoint:
   sonarQubeServer: 'http://localhost'
 
 sonarqube:
-  scannerPath: '/Users/khoa.nguyen/Downloads/sonar-scanner-4.4.0.2170-macosx/bin/sonar-scanner'
-  propertiesPath: '/Users/khoa.nguyen/Downloads/sonar-scanner-4.4.0.2170-macosx/conf/sonar-scanner.properties'
-  baseDirectory: '/tmp/'
+  scannerPath: '/usr/local/sonarqube/sonar-scanner/bin/sonar-scanner'
+  propertiesPath: '/usr/local/sonarqube/sonar-scanner/conf/sonar-scanner.properties'
+  baseDirectory: '~/'
