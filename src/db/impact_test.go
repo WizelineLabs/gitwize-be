@@ -16,7 +16,7 @@ func TestGetCommitDurationStat(t *testing.T) {
 	nodata, _ := GetCommitDurationStat("1", from, to)
 	assert.Empty(t, nodata)
 
-	to, _ = time.Parse("2006-01-02", "2020-06-22")
+	to, _ = time.Parse("2006-01-02", "2020-06-23")
 	data, _ := GetCommitDurationStat("1", from, to)
 	log.Println("data", from, to, data)
 	assert.Equal(t, data.ActiveDays, 2)
@@ -33,7 +33,7 @@ func TestGetModificationStat(t *testing.T) {
 	nodata, _ := GetModificationStat("1", from, to)
 	assert.Empty(t, nodata)
 
-	to, _ = time.Parse("2006-01-02", "2020-06-22")
+	to, _ = time.Parse("2006-01-02", "2020-06-23")
 	data, _ := GetModificationStat("1", from, to)
 	log.Println("data", from, to, data)
 	assert.Equal(t, data.TableName(), tableModification)

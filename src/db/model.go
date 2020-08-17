@@ -52,6 +52,7 @@ const (
 	tableFileChurn       = "file_stat_data"
 	tableCommitDuration  = "commit_data"
 	tableModification    = "file_stat_data"
+	tableFileDetail      = "file_stat_data"
 )
 
 type Repository struct {
@@ -226,4 +227,14 @@ type PullRequestInfo struct {
 
 func (PullRequestInfo) TableName() string {
 	return tablePullRequest
+}
+
+type FileDetail struct {
+	FileName  string `gorm:"column:file_name" json:"fileName"`
+	Additions int    `gorm:"column:addition_loc" json:"additions"`
+	Deletions int    `gorm:"column:deletion_loc" json:"deletions"`
+}
+
+func (FileDetail) TableName() string {
+	return tableFileDetail
 }
