@@ -12,3 +12,9 @@ auth:
 
 endpoint:
   frontEnd: 'http://localhost:8080'
+  sonarQubeServer: 'http://localhost'
+
+sonarqube:
+  scannerPath: '/usr/local/sonarqube/sonar-scanner/bin/sonar-scanner'
+  propertiesPath: '/usr/local/sonarqube/sonar-scanner/conf/sonar-scanner.properties'
+  baseDirectory: '~/'
