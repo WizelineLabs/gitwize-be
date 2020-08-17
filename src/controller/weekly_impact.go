@@ -38,7 +38,27 @@ spec https://wizeline.atlassian.net/wiki/spaces/GWZ/pages/1424393330/API+spec+-+
     "churnPercentage": {
       "currentPeriod": 17,
       "previousPeriod": 23
-    }
+	},
+	"legacyPercentage": {
+		"currentPeriod": 17.33,
+		"previousPeriod": 23.44
+	},
+	"fileChanged": {
+		"currentPeriod": 20,
+		"previousPeriod": 30
+	},
+	"insertionPoints": {
+		"currentPeriod": 10,
+		"previousPeriod": 15
+	},
+	"additions": {
+		"currentPeriod": 10,
+		"previousPeriod": 15
+	},
+	"deletions": {
+		"currentPeriod": 10,
+		"previousPeriod": 15
+	}
 }
 */
 
@@ -65,13 +85,19 @@ type ChurnMetric struct {
 }
 
 type WeeklyImpactData struct {
-	ImpactPeriod     DatePeriod     `json:"period"`
-	ImpactScore      ImpactMetric   `json:"impactScore"`
-	ActiveDays       ImpactMetric   `json:"activeDays"`
-	CommitsPerDay    ImpactMetric   `json:"commitsPerDay"`
-	MostChurnedFiles []db.FileChurn `json:"mostChurnedFiles"`
-	NewCodePercent   ImpactMetric   `json:"newCodePercentage"`
-	ChurnPercent     ImpactMetric   `json:"churnPercentage"`
+	ImpactPeriod     DatePeriod      `json:"period"`
+	ImpactScore      ImpactMetric    `json:"impactScore"`
+	ActiveDays       ImpactMetric    `json:"activeDays"`
+	CommitsPerDay    ImpactMetric    `json:"commitsPerDay"`
+	MostChurnedFiles []db.FileChurn  `json:"mostChurnedFiles"`
+	NewCodePercent   ImpactMetric    `json:"newCodePercentage"`
+	ChurnPercent     ImpactMetric    `json:"churnPercentage"`
+	LegacyPercent    ImpactMetric    `json:"legacyPercentage"`
+	FileChanged      ImpactMetric    `json:"fileChanged"`
+	InsertionPoints  ImpactMetric    `json:"insertionPoints"`
+	Additions        ImpactMetric    `json:"additions"`
+	Deletions        ImpactMetric    `json:"deletions"`
+	UnusualFiles     []db.FileDetail `json:"unusualFiles"`
 }
 
 func getWeeklyImpact(c *gin.Context) {
@@ -80,9 +106,15 @@ func getWeeklyImpact(c *gin.Context) {
 		return
 	}
 
-	now := time.Now().UTC()
-	currentDuration := getWeekRange(now.AddDate(0, 0, -7))
-	prevDuration := getWeekRange(now.AddDate(0, 0, -14))
+	values, err := getIntParams(c, "date_from")
+	if err != nil {
+		return
+	}
+	from := values[0]
+	t := time.Unix(int64(from), 0)
+
+	currentDuration := getWeekRange(t.UTC())
+	prevDuration := getWeekRange(t.UTC().AddDate(0, 0, -7))
 
 	mostChurnedFiles, err := db.GetFileChurn(repoID, currentDuration.from, currentDuration.to)
 	if hasErrUnknown(c, err) {
@@ -109,6 +141,11 @@ func getWeeklyImpact(c *gin.Context) {
 		return
 	}
 
+	unusualfiles, err := db.GetUnusualFiles(repoID, currentDuration.from, currentDuration.to)
+	if hasErrUnknown(c, err) {
+		return
+	}
+
 	currentNewCodePercent, currentChurnPercent := getNewCodeAndChurnPercentage(currentModification)
 	prevNewCodePercent, prevChurnPercent := getNewCodeAndChurnPercentage(prevModification)
 
@@ -120,6 +157,12 @@ func getWeeklyImpact(c *gin.Context) {
 		MostChurnedFiles: mostChurnedFiles,
 		NewCodePercent:   ImpactMetric{currentNewCodePercent, prevNewCodePercent},
 		ChurnPercent:     ImpactMetric{currentChurnPercent, prevChurnPercent},
+		LegacyPercent:    getDumbLegacyPercent(),
+		FileChanged:      getFileChanged(currentStat, prevStat),
+		InsertionPoints:  getInsertionPoints(currentStat, prevStat),
+		Additions:        getAdditions(currentStat, prevStat),
+		Deletions:        getDeletions(currentStat, prevStat),
+		UnusualFiles:     unusualfiles,
 	}
 
 	c.JSON(http.StatusOK, weeklyData)
@@ -172,4 +215,40 @@ func getNewCodeAndChurnPercentage(stat db.ModificationStat) (newCodePercent, chu
 		churnPercent = float64(stat.Modifications) / float64(totalAddition) * 100
 	}
 	return newCodePercent, churnPercent
+}
+
+// TODO: update when legacy code is ready in db
+func getDumbLegacyPercent() ImpactMetric {
+	return ImpactMetric{
+		CurrentPeriod:  17.33,
+		PreviousPeriod: 23.44,
+	}
+}
+
+func getFileChanged(currentStat, prevStat db.DurationStat) ImpactMetric {
+	return ImpactMetric{
+		CurrentPeriod:  float64(currentStat.NumFiles),
+		PreviousPeriod: float64(prevStat.NumFiles),
+	}
+}
+
+func getAdditions(currentStat, prevStat db.DurationStat) ImpactMetric {
+	return ImpactMetric{
+		CurrentPeriod:  float64(currentStat.Addtions),
+		PreviousPeriod: float64(prevStat.Addtions),
+	}
+}
+
+func getDeletions(currentStat, prevStat db.DurationStat) ImpactMetric {
+	return ImpactMetric{
+		CurrentPeriod:  float64(currentStat.Deletions),
+		PreviousPeriod: float64(prevStat.Deletions),
+	}
+}
+
+func getInsertionPoints(currentStat, prevStat db.DurationStat) ImpactMetric {
+	return ImpactMetric{
+		CurrentPeriod:  float64(currentStat.Insertions),
+		PreviousPeriod: float64(prevStat.Insertions),
+	}
 }

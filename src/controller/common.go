@@ -20,6 +20,7 @@ const (
 	gwCodeVelocity       = ":id/code-velocity"
 	gwQuarterlyTrend     = ":id/trends"
 	gwPullRequestSize    = ":id/pullrequest-size"
+	gwCodeQuality        = ":id/code-quality"
 )
 
 type AdminOperation int
