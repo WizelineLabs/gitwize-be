@@ -7,7 +7,9 @@ import (
 	"gitwize-be/src/db"
 	"gitwize-be/src/githubapi"
 	"gitwize-be/src/lambda"
+	"gitwize-be/src/sonarqube"
 	"gitwize-be/src/utils"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -230,6 +232,14 @@ func postRepos(c *gin.Context) {
 		LastUpdated: createdRepo.CtlModifiedDate,
 	}
 
+	go func() { // Start setup sonarQube & Scan
+		if err := sonarqube.SetupSonarQube(userId, strconv.Itoa(createdRepo.ID), "master"); err != nil {
+			log.Println(utils.Trace() + ": Error:" + err.Error())
+		} else {
+			sonarqube.ScanAndUpdateResult(userId, strconv.Itoa(createdRepo.ID))
+		}
+	}()
+
 	c.JSON(http.StatusCreated, repoInfo)
 }
 
@@ -242,22 +252,14 @@ func delRepos(c *gin.Context) {
 
 	id := c.Param("id")
 	repo := db.Repository{}
-	if err := db.GetOneRepoUser(userId, id, &repo); err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
-		return
+	if !hasErrUnknown(c, db.GetOneRepoUser(userId, id, &repo)) &&
+		!hasErrUnknown(c, sonarqube.DelSonarQubeProj(userId, strconv.Itoa(repo.ID))) &&
+		!hasErrUnknown(c, db.DelSonarQubeIntance(userId, strconv.Itoa(repo.ID))) &&
+		!hasErrUnknown(c, db.DeleteRepoUser(userId, &repo)) {
+		c.JSON(http.StatusNoContent, nil)
 	}
 
-	if err := db.DeleteRepoUser(userId, &repo); err != nil {
-		c.JSON(http.StatusInternalServerError, RestErr{
-			ErrKeyUnknownIssue,
-			err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusNoContent, nil)
+	return
 }
 
 func getStats(c *gin.Context) {
@@ -375,7 +377,6 @@ func Initialize() *gin.Engine {
 		repoApi.GET("", getListRepos)
 		repoApi.GET(gwRepoGetPutDel, getRepos)
 		repoApi.POST("", postRepos)
-		//repoApi.PUT(gwRepoGetPutDel, putRepos)
 		repoApi.DELETE(gwRepoGetPutDel, delRepos)
 		repoApi.GET(gwRepoStats, getStats)
 		repoApi.GET(gwContributorStats, getContributorStats)
@@ -383,6 +384,7 @@ func Initialize() *gin.Engine {
 		repoApi.GET(gwCodeVelocity, getCodeChangeVelocity)
 		repoApi.GET(gwQuarterlyTrend, getStatsQuarterlyTrends)
 		repoApi.GET(gwPullRequestSize, getPullRequestSize)
+		repoApi.GET(gwCodeQuality, getCodeQuality)
 	}
 
 	return ginCont
