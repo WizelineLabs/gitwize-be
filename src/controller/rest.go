@@ -11,7 +11,6 @@ import (
 	"gitwize-be/src/utils"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -35,28 +34,9 @@ func extractUserInfo(c *gin.Context) string {
 
 func posAdminOperation(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
-	opId, err := strconv.Atoi(c.Param("op_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	authHeader := c.Request.Header.Get("Authorization")
-	if authHeader == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Admin key does not exist"})
-		return
-	}
-
-	adminKey := strings.Split(authHeader, "Bearer ")[1]
-	if adminKey != os.Getenv("ADMIN_OP_KEY") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Admin key is not correct"})
-		return
-	}
-	switch AdminOperation(opId) {
-	default:
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad Admin Operation"})
-	}
+	// TODO: will implement this feature later
 }
+
 func getRepos(c *gin.Context) {
 	defer utils.TimeTrack(time.Now(), utils.GetFuncName())
 
