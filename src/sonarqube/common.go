@@ -67,13 +67,17 @@ func cloneRepo(repoName, repoURL, token string) {
 	os.RemoveAll(repoPath)
 	decryptToken := ""
 	if len(token) > 0 {
-		decryptToken = cypher.DecryptString(token, os.Getenv("CYPHER_PASS_PHASE"))
+		decryptToken = cypher.DecryptString(token, configuration.CurConfiguration.Cypher.PassPhase)
 	} else {
 		if configuration.CurConfiguration.Auth.AuthDisable == "true" &&
 			os.Getenv("USE_DEFAULT_API_TOKEN") == "true" {
 			decryptToken = os.Getenv("DEFAULT_GITHUB_TOKEN")
 		}
 	}
+
+	log.Println(utils.Trace() + ": repoName=" + repoName + ", repoURL=" +
+		repoURL + ", token=" + token + ", decryptToken=" + decryptToken + ", repoPath=" + repoPath)
+
 	if _, err := git.PlainClone(repoPath, false, &git.CloneOptions{
 		Auth: &gogit_http.BasicAuth{
 			Username: "nonempty",
