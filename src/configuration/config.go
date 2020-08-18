@@ -112,4 +112,5 @@ func ReadConfiguration() {
 	CurConfiguration.Database.GwDbPassword = viper.GetString(gwDbPasswordEnv)
 	CurConfiguration.Cypher.PassPhase = viper.GetString(cypherPassPhaseEnv)
 	CurConfiguration.SonarQube.AdminSecret = viper.GetString(sonarQubeAdminSecret)
+	fmt.Printf("configuration is %+v\n", CurConfiguration)
 }
