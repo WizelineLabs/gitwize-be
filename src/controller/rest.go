@@ -336,7 +336,7 @@ func corsHandler() gin.HandlerFunc {
 		AllowedOrigins:   []string{configuration.CurConfiguration.Endpoint.Frontend},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "OPTIONS", "HEAD", "DELETE"},
-		AllowedHeaders:   []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowedHeaders:   []string{"Origin", "Content-Length", "Content-Type", "Authorization", "AuthenticatedUser"},
 	})
 }
 
