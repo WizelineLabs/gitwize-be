@@ -20,6 +20,7 @@ type Configurations struct {
 // ServerConfigurations exported
 type ServerConfigurations struct {
 	Port string
+	Host string
 }
 
 type CypherConfigurations struct {
